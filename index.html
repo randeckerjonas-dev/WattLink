@@ -154,7 +154,15 @@ details[open] summary::after{transform:rotate(225deg)}
 .prog i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--a2),var(--a1));width:0}
 .rings{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
 .ring{flex:1;aspect-ratio:1;max-width:114px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px}
+.ring{position:relative}
 .ring .ic{color:var(--a2);margin-bottom:3px}
+/* Herzfrequenz-Zonenbogen (5 Zonen, aktuelle Zone hervorgehoben) */
+.hr-arc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.hz{fill:none;stroke-width:5;stroke-linecap:round;opacity:.3;transition:opacity .35s,stroke-width .35s}
+.hz.on{opacity:1;stroke-width:8;filter:drop-shadow(0 0 3px currentColor)}
+#hz-dot{fill:#fff;stroke-width:2.6;opacity:0;transition:transform .7s linear,opacity .3s,stroke .3s;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+.ring .zl{font-size:11px;color:var(--ink2);margin-top:4px}
+.ring .zl b{font-weight:500;color:var(--ink)}
 .ring .v{font-size:30px;font-weight:300;line-height:1;font-variant-numeric:tabular-nums}
 .ring .u{font-size:11px;color:var(--ink2);margin-top:4px}
 /* Musik-Widget (Look wie Apple CarPlay „Aktuelle Wiedergabe“) */
@@ -267,7 +275,7 @@ details[open] summary::after{transform:rotate(225deg)}
       <div class="rings">
         <div class="glass ring"><span data-i="bolt" data-s="22"></span><div class="v" id="r-w">–</div><div class="u" id="r-wu">W</div></div>
         <div class="glass ring"><span data-i="cycle" data-s="22"></span><div class="v" id="r-c">–</div><div class="u">rpm</div></div>
-        <div class="glass ring"><span data-i="heart" data-s="22"></span><div class="v" id="r-h">–</div><div class="u" id="r-hu">bpm</div></div>
+        <div class="glass ring" id="hr-ring"><svg class="hr-arc" id="hr-arc" viewBox="0 0 100 100"></svg><span data-i="heart" data-s="22"></span><div class="v" id="r-h">–</div><div class="u" id="r-hu">bpm</div></div>
       </div>
       <div class="mus" id="mus">
         <div class="mus-bg" id="mus-bg"></div>
@@ -427,6 +435,19 @@ function idbGet(){return new Promise(async res=>{try{const d=await idbOpen();con
 function save(){const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}idbPut(j)}
 S=load();
 const W=p=>Math.round(p/100*S.settings.ftp);
+/* Herzfrequenzzonen: 5 Zonen nach Coggan, bezogen auf die Schwellen-HF (LTHR); Z5 = Leistungszonen Z5–Z7 zusammen */
+const HRZ_NAMES=['Aktive Erholung','Ausdauer','Tempo','Schwelle','VO2max und höher'];
+const HRZ_COL=['#6ec6f5','#6fd39a','#ffd23f','#ff9a3d','#ff4d5e'];
+const lthr=()=>S.settings.lthr||Math.round(S.settings.maxHr*.9);
+function hrZones(){
+  const L=lthr(),r=p=>Math.round(L*p/100),lo=[0,r(69),r(84),r(95),r(106)],M=Math.max(S.settings.maxHr,lo[4]+1);
+  lo[0]=Math.min(Math.round(M*.5),lo[1]-1);
+  return lo.map((l,i)=>({z:i+1,name:HRZ_NAMES[i],col:HRZ_COL[i],lo:l,hi:i<4?lo[i+1]-1:M,pLo:[null,69,84,95,106][i],pHi:[68,83,94,105,null][i]}));
+}
+function hrPos(hr,Z){
+  let i=0;for(let k=4;k>0;k--)if(hr>=Z[k].lo){i=k;break}
+  const a=Z[i].lo,b=i===4?Z[4].hi:Z[i+1].lo;return{i,f:clamp((hr-a)/(b-a),0,1)};
+}
 /* Daum TRS 8008: nur 5-W-Schritte, 25–800 W → beim Abspielen/Senden immer gerundet */
 const snap5=w=>Math.min(800,Math.max(25,Math.round(w/5)*5));
 const W5=p=>snap5(p/100*S.settings.ftp);
@@ -995,7 +1016,7 @@ V.play={
     if(Device.state!=='on')toast('Nicht verbunden – Programm läuft ohne Gerät');
     clearInterval(play.timer);play.timer=setInterval(tick,250);tick();
     play.rec=[];play.startedAt=Date.now();clearInterval(play.recT);play.recT=setInterval(recTick,1000);
-    Music.start();
+    Music.start();buildHrArc();
     requestAnimationFrame(raf);
   },
   redraw(){play.secDrawn=-1;playUI()}
@@ -1067,10 +1088,28 @@ function playUI(){
   $('#r-w').textContent=pw!=null&&Device.state==='on'?Math.round(pw):'–';
   $('#r-wu').textContent=pw!=null&&Device.state==='on'?`W · ${Math.round(pw/S.settings.ftp*100)} % FTP`:'W';
   $('#r-c').textContent=Device.rpm!=null&&Device.state==='on'?Device.rpm:'–';
-  $('#r-h').textContent=Device.hr&&Device.state==='on'?Device.hr:'–';
-  $('#r-hu').textContent=Device.hr&&Device.state==='on'?`bpm · ${Math.round(Device.hr/S.settings.maxHr*100)} %`:'bpm';
+  updHr();
   const nx=nextPhaseStart();$('#btn-skip').classList.toggle('off',nx==null);
   Music.tick();
+}
+/* Zonenbogen: 5 gleich lange Segmente über 280° (unten offen); Punkt = aktuelle HF innerhalb ihrer Zone */
+const ARC_SEG=52,ARC_GAP=5,ARC_A0=-140;
+const arcPt=a=>{const t=a*Math.PI/180;return[50+45*Math.sin(t),50-45*Math.cos(t)]};
+function buildHrArc(){
+  play.Z=hrZones();let s='';
+  play.Z.forEach((z,i)=>{const a=ARC_A0+i*(ARC_SEG+ARC_GAP),[x0,y0]=arcPt(a),[x1,y1]=arcPt(a+ARC_SEG);
+    s+=`<path class="hz" d="M${x0.toFixed(2)} ${y0.toFixed(2)}A45 45 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}" stroke="${z.col}" style="color:${z.col}"/>`});
+  $('#hr-arc').innerHTML=s+'<circle id="hz-dot" r="4.6" cx="0" cy="0"/>';
+}
+function updHr(){
+  const hr=Device.hr&&Device.state==='on'?Math.round(Device.hr):0,Z=play.Z;
+  $('#r-h').textContent=hr||'–';
+  const ps=$$('#hr-arc .hz'),dot=$('#hz-dot');
+  if(!hr||!Z){$('#r-hu').textContent='bpm';ps.forEach(p=>p.classList.remove('on'));if(dot)dot.style.opacity=0;return}
+  const{i,f}=hrPos(hr,Z),[x,y]=arcPt(ARC_A0+i*(ARC_SEG+ARC_GAP)+f*ARC_SEG);
+  $('#r-hu').innerHTML=`bpm · <b style="font-weight:500;color:var(--ink)">Z${i+1}</b>`;
+  ps.forEach((p,k)=>p.classList.toggle('on',k===i));
+  dot.style.opacity=1;dot.style.transform=`translate(${x}px,${y}px)`;dot.style.stroke=Z[i].col;
 }
 function nextPhaseStart(){const ph=play.blocks[play.i]&&play.blocks[play.i].phase;for(let j=play.i+1;j<play.blocks.length;j++)if(play.blocks[j].phase!==ph)return j;return null}
 function setPauseIcon(){$('#btn-pause').innerHTML=I(play.paused?'play':'pause',play.paused?28:26)}
@@ -1178,13 +1217,22 @@ function buildSettings(){
   };
   const hrz=h('div');
   const drawHr=()=>{
-    hrz.innerHTML='';const m=S.settings.maxHr,b=[[50,60],[60,70],[70,80],[80,90],[90,100]];
-    b.forEach(([a,c],i)=>hrz.append(h('div',{class:'zrow'},h('i',{style:`background:${['#bfe3f7','#7fd7b0','#ffd36b','#ff9f43','#ff5f7e'][i]}`}),h('b',{},`HF ${i+1}`),h('span',{},`${Math.round(m*a/100)}–${Math.round(m*c/100)} bpm · ${a}–${c} %`))));
+    hrz.innerHTML='';
+    hrz.append(h('div',{class:'hint',style:'margin-top:0'},'5 Zonen nach Coggan, bezogen auf die Schwellen-HF (LTHR). Zone 5 fasst die Leistungszonen Z5–Z7 zusammen.'));
+    hrZones().forEach(z=>hrz.append(h('div',{class:'zrow'},h('i',{style:`background:${z.col}`}),h('b',{},`Z${z.z}`),
+      h('span',{style:'margin:0 auto 0 0;text-align:left'},z.name),
+      h('span',{},`${z.z===1?`< ${z.hi+1}`:z.z===5?`≥ ${z.lo}`:`${z.lo}–${z.hi}`} bpm · ${z.z===1?`< ${z.pHi+1}`:z.z===5?`≥ ${z.pLo}`:`${z.pLo}–${z.pHi}`} %`))));
   };
+  const lthrBox=h('div');
+  const drawLthr=()=>{lthrBox.innerHTML='';
+    lthrBox.append(field('Schwellen-HF (LTHR)',{get:()=>lthr(),set:v=>{S.settings.lthr=Math.round(v);save()},step:1,min:80,max:230,unit:'bpm',cb:drawHr}),
+      h('div',{class:'hint'},'Ohne eigenen Wert: 90 % der maximalen Herzfrequenz.'))};
+  drawLthr();
   body.append(h('div',{class:'sub'},'Leistung'),
     h('div',{class:'glass pad'},
       field('FTP',{get:()=>S.settings.ftp,set:v=>{S.settings.ftp=Math.round(v);save()},step:5,min:50,max:600,unit:'W',cb:drawZones}),
-      field('Maximale Herzfrequenz',{get:()=>S.settings.maxHr,set:v=>{S.settings.maxHr=Math.round(v);save()},step:1,min:100,max:230,unit:'bpm',cb:drawHr})),
+      field('Maximale Herzfrequenz',{get:()=>S.settings.maxHr,set:v=>{S.settings.maxHr=Math.round(v);save()},step:1,min:100,max:230,unit:'bpm',cb:()=>{drawLthr();drawHr()}}),
+      lthrBox),
     );
   drawZones();drawHr();
   const spBox=h('div');
