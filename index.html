@@ -164,11 +164,11 @@ details[open] summary::after{transform:rotate(225deg)}
 .mus::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.34))}
 .mus-in{padding:14px 16px 12px}
 .mus-row{display:flex;align-items:center;gap:13px}
-.mus-art{flex:none;width:76px;height:76px;border-radius:14px;background:rgba(255,255,255,.18) center/cover no-repeat;box-shadow:0 6px 18px rgba(0,0,0,.35)}
-.mus-tx{flex:1;min-width:0}
+.mus-art{flex:none;width:100px;height:100px;border-radius:15px;background:rgba(255,255,255,.18) center/cover no-repeat;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.mus-side{flex:1;min-width:0}
 .mus-t{font-size:17px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mus-a{font-size:14px;font-weight:400;opacity:.72;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mus-ctl{flex:none;display:flex;gap:2px}
+.mus-ctl{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px}
 .mus-ctl button{width:46px;height:46px;border:0;border-radius:50%;background:none;color:#fff;display:grid;place-items:center;padding:0}
 .mus-ctl button:active{background:rgba(255,255,255,.22)}
 .mus-prog{height:5px;border-radius:5px;background:rgba(255,255,255,.28);margin-top:14px;overflow:hidden}
@@ -274,8 +274,10 @@ details[open] summary::after{transform:rotate(225deg)}
         <div class="mus-in">
           <div class="mus-row">
             <div class="mus-art" id="mus-art"></div>
-            <div class="mus-tx"><div class="mus-t" id="mus-t">–</div><div class="mus-a" id="mus-a"></div></div>
-            <div class="mus-ctl"><button id="mus-pp" aria-label="Wiedergabe / Pause"></button><button id="mus-nx" aria-label="Nächster Titel"></button></div>
+            <div class="mus-side">
+              <div class="mus-t" id="mus-t">–</div><div class="mus-a" id="mus-a"></div>
+              <div class="mus-ctl"><button id="mus-pv" aria-label="Vorheriger Titel"></button><button id="mus-pp" aria-label="Wiedergabe / Pause"></button><button id="mus-nx" aria-label="Nächster Titel"></button></div>
+            </div>
           </div>
           <div class="mus-prog"><i id="mus-pi"></i></div>
           <div class="mus-times"><span id="mus-e">0:00</span><span id="mus-r"></span></div>
@@ -1286,6 +1288,7 @@ async function spHandleRedirect(){
 const MI={
   play:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M7.5 5v14l12-7z"/></svg>',
   pause:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.3" height="14" rx="1.3"/><rect x="13.7" y="5" width="4.3" height="14" rx="1.3"/></svg>',
+  prev:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M20.5 6v12l-8.5-6z"/><path d="M11.5 6v12l-8.5-6z"/></svg>',
   next:'<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><path d="M3.5 6v12l8.5-6z"/><path d="M12.5 6v12l8.5-6z"/></svg>'
 };
 const Music={
@@ -1309,14 +1312,14 @@ const Music={
   async ctl(kind){
     const s=this.st;
     if(kind==='pp'&&s){s.prog=this.cur();s.t=performance.now();s.playing=!s.playing;this.render()}   // sofort umschalten
-    const [m,p]=kind==='nx'?['POST','/me/player/next']:(s&&!s.playing?['PUT','/me/player/pause']:['PUT','/me/player/play']);
+    const [m,p]=kind==='nx'?['POST','/me/player/next']:kind==='pv'?['POST','/me/player/previous']:(s&&!s.playing?['PUT','/me/player/pause']:['PUT','/me/player/play']);
     try{
       const r=await spApi(m,p);
       if(!r)toast('Spotify nicht verbunden');
       else if(r.status===404)toast('Kein aktives Spotify-Gerät – in der Spotify-App etwas abspielen');
       else if(r.status===403)toast('Steuern geht nur mit Spotify Premium');
     }catch(e){toast('Spotify nicht erreichbar')}
-    setTimeout(()=>this.poll(),kind==='nx'?700:400);
+    setTimeout(()=>this.poll(),kind==='pp'?400:700);
   },
   render(){
     const el=$('#mus');if(!el)return;el.classList.toggle('on',this.on());if(!this.on())return;
@@ -1325,19 +1328,22 @@ const Music={
     $('#mus-a').textContent=s?s.artist:'In der Spotify-App etwas abspielen';
     const art=s&&s.art||'';
     if(art!==this.art){this.art=art;const u=art?`url("${art}")`:'none';$('#mus-art').style.backgroundImage=u;$('#mus-bg').style.backgroundImage=u}
-    $('#mus-pp').innerHTML=s&&s.playing?MI.pause:MI.play;$('#mus-nx').innerHTML=MI.next;
+    $('#mus-pp').innerHTML=s&&s.playing?MI.pause:MI.play;$('#mus-nx').innerHTML=MI.next;$('#mus-pv').innerHTML=MI.prev;
     this.tick();
   },
   tick(){
     if(!this.on())return;
     const s=this.st,p=this.cur(),d=s?s.dur:0;
     $('#mus-pi').style.width=(d?p/d*100:0)+'%';
-    $('#mus-e').textContent=s?fmtTime(p/1000):'';$('#mus-r').textContent=d?'-'+fmtTime((d-p)/1000):'';
+    /* gleiche ganze Sekunde für beide Anzeigen: Rest = Gesamt − Abgelaufen, so springen beide im selben Moment */
+    const es=Math.floor(p/1000),ts=Math.round(d/1000);
+    $('#mus-e').textContent=s?fmtTime(es):'';$('#mus-r').textContent=d?'-'+fmtTime(Math.max(0,ts-es)):'';
     if(s&&s.playing&&d&&p>=d&&!this.edge){this.edge=true;setTimeout(()=>{this.edge=false;this.poll()},800)}   // Titelende → neuen Titel holen
   }
 };
 $('#mus-pp').addEventListener('click',()=>Music.ctl('pp'));
 $('#mus-nx').addEventListener('click',()=>Music.ctl('nx'));
+$('#mus-pv').addEventListener('click',()=>Music.ctl('pv'));
 
 /* ───────── Logbuch ───────── */
 V.log={enter(){renderLog()},redraw(){renderLog()}};
