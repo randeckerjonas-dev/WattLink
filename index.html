@@ -36,17 +36,19 @@ details.glass{margin-top:14px}
 .kpi small{display:block;font-size:12px;color:var(--ink2);letter-spacing:.3px}
 .kpi b{font-weight:300;font-size:24px;color:var(--ink)}.kpi b i{font-style:normal;font-size:13px;color:var(--ink2);margin-left:3px}
 .ldcv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.ldread{display:flex;flex-wrap:wrap;gap:4px 12px;min-height:38px;font-size:12.5px;color:var(--ink2);align-items:center;margin-bottom:6px}
-.ldread b{font-weight:400;color:var(--ink)}
-.ldchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
-.ldchips .chip{padding:6px 12px;font-size:13px;gap:7px}
-.ldchips .chip i{width:10px;height:10px;border-radius:50%;display:block}
-.ldchips .chip:not(.sel) i{opacity:.35}
-.zd{margin:12px 0 0}
-.zd .zt{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);gap:8px}
-.zd .zt b{font-weight:400;color:var(--ink)}
-.zd .zbar{height:10px;border-radius:6px;background:rgba(108,101,146,.1);margin-top:5px;overflow:hidden}
+.ldchips{display:flex;gap:8px;margin-bottom:10px}
+.ldchips .chip{flex:1;justify-content:center;padding:8px 6px;gap:8px}
+.ldchips .chip:not(.sel){opacity:.6}
+.ldwg{position:absolute;top:6px;z-index:5;pointer-events:none;padding:10px 12px;min-width:128px;font-size:14px;display:none}
+.glass.ldwg{background:rgba(255,255,255,.93)}
+.ldwg .t{font-size:12px;color:var(--ink2);margin-bottom:2px}
+.ldwg .r{display:flex;align-items:center;gap:8px;margin-top:5px}.ldwg .r b{font-weight:400}.ldwg .r .ic{color:var(--ink2)}
+.zd{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:var(--ink2)}
+.zd:first-child{margin-top:0}
+.zd b{font-weight:400;color:var(--ink);width:22px;flex:none}
+.zd .zbar{flex:1;height:10px;border-radius:6px;background:rgba(108,101,146,.1);overflow:hidden}
 .zd .zbar i{display:block;height:100%;border-radius:6px}
+.zd span{width:84px;text-align:right;flex:none}
 .ldlab{font-size:12.5px;color:var(--ink2);margin:0 0 6px}
 details summary{cursor:pointer;list-style:none;font-size:15px;display:flex;justify-content:space-between;align-items:center}
 details summary::-webkit-details-marker{display:none}
@@ -172,7 +174,8 @@ details[open] summary::after{transform:rotate(225deg)}
 .ph div{font-size:13px;color:var(--ink2);margin-top:2px}
 .pbody{flex:1;overflow-y:auto;padding:12px 18px 110px}
 .bcard{padding:14px 16px;margin-top:14px}
-.bcard+.chart{margin-top:14px}
+.chartwrap{position:relative;margin-top:14px}
+#pl-info{position:absolute;left:8px;right:8px;top:8px;margin:0;z-index:6;pointer-events:none;min-height:0;padding:10px 14px;background:rgba(255,255,255,.82)}
 #pl-back{position:absolute;left:18px;top:calc(env(safe-area-inset-top) + 8px);z-index:6}
 /* minimiertes Training: Widget über den Buttons auf Startseite und Programm-Seite */
 .mnp{position:absolute;left:18px;right:18px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:7;padding:12px 16px 13px;display:none;cursor:pointer}
@@ -317,8 +320,8 @@ details[open] summary::after{transform:rotate(225deg)}
         <div class="brow"><div class="bl" id="pl-label"></div><div class="bt" id="pl-rem"></div></div>
         <div class="prog"><i id="pl-prog"></i></div>
       </div>
-      <div class="glass chart" id="pl-chart"></div>
-      <div class="glass info" id="pl-info" style="display:none"></div>
+      <div class="chartwrap"><div class="glass chart" id="pl-chart"></div>
+      <div class="glass info" id="pl-info" style="display:none"></div></div>
       <div class="rings">
         <div class="glass ring"><svg class="hr-arc" id="pw-arc" viewBox="0 0 100 100"></svg><span data-i="bolt" data-s="22"></span><div class="v" id="r-w">–</div><div class="u" id="r-wu">W</div></div>
         <div class="glass ring"><span data-i="cycle" data-s="22"></span><div class="v" id="r-c">–</div><div class="u">rpm</div></div>
@@ -372,7 +375,6 @@ details[open] summary::after{transform:rotate(225deg)}
   <section class="page" id="logd">
     <header class="topbar">
       <button class="iconbtn glass" data-act="back" data-i="back" aria-label="Zurück"></button>
-      <div style="min-width:0"><div class="ptitle" id="logd-t">Einheit</div><div class="psub" id="logd-s"></div></div>
     </header>
     <div class="scroll" id="logd-body"></div>
   </section>
@@ -437,6 +439,9 @@ const PATHS={
   bolt:'<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>',
   cycle:'<path d="M20 12a8 8 0 1 1-2.5-5.8M20 4v4.5h-4.5"/>',
   heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+  eyeoff:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 4l16 16"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".9"/>',
   clock:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
   log:'<path d="M6 4h11a1 1 0 0 1 1 1v15H7a1 1 0 0 1-1-1V4zM6 17h12M9.5 8h5M9.5 11.5h5"/>',
   ramp:'<path d="M4 18l16-10"/>',
@@ -1471,9 +1476,20 @@ async function askExit(){
   if(!ok||!play.running)return;
   const sm=buildRun('aborted');
   stopRun();
-  if(sm.moving>=300&&await confirmDialog({title:'Einheit speichern?',text:`${fmtTime(sm.elapsed)} von ${fmtTime(sm.planned)}${sm.avgW!=null?` · Ø ${sm.avgW} W`:''}${sm.avgHr!=null?` · Ø ${sm.avgHr} bpm`:''}`,ok:'Speichern',cancel:'Verwerfen'}))await storeRun(sm);
+  if(sm.moving>=300&&await askSaveRun(sm))await storeRun(sm);
   leavePlay();
 }
+const RPE=[['Sehr leicht','Locker, Unterhaltung problemlos'],['Leicht','Entspannt, lange durchzuhalten'],['Mittel','Fordernd, aber gut machbar'],['Hart','Sehr anstrengend, schwere Atmung'],['Maximal','All out – mehr ging nicht']];
+function rpeInput(sm){
+  sm.rpe=3;
+  const lab=h('div',{class:'hint',style:'margin:6px 0 0'}),inp=h('input',{type:'range',min:1,max:5,step:1,value:3,style:'width:100%;accent-color:#9b5cf6'});
+  const upd=()=>{sm.rpe=+inp.value;lab.replaceChildren(h('b',{style:'font-weight:400;color:var(--ink)'},`${sm.rpe} · ${RPE[sm.rpe-1][0]}`),' – '+RPE[sm.rpe-1][1])};
+  inp.addEventListener('input',upd);upd();
+  return h('div',{style:'margin-top:14px'},h('div',{class:'fl',style:'margin-bottom:2px'},'Gefühlte Anstrengung (1–5)'),inp,lab);
+}
+function askSaveRun(sm){return new Promise(res=>{let m;const done=v=>{closeModal(m);res(v)};
+  m=openModal([h('h3',{},'Einheit speichern?'),h('p',{},`${fmtTime(sm.elapsed)} von ${fmtTime(sm.planned)}${sm.avgW!=null?` · Ø ${sm.avgW} W`:''}${sm.avgHr!=null?` · Ø ${sm.avgHr} bpm`:''}`),rpeInput(sm),
+    h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>done(false)},'Verwerfen'),h('button',{class:'btn primary',onclick:()=>done(true)},'Speichern'))],()=>done(false))})}
 function endPlay(){stopRun();leavePlay()}
 function finishPlay(){
   const sm=buildRun('completed');
@@ -1485,7 +1501,7 @@ function finishPlay(){
     sm.avgW!=null&&h('div',{class:'stat'},h('span',{},'Ø Leistung'),h('span',{},`${sm.avgW} W · ${Math.round(sm.avgW/S.settings.ftp*100)} % FTP`)),
     sm.avgHr!=null&&h('div',{class:'stat'},h('span',{},'Ø Herzfrequenz'),h('span',{},`${sm.avgHr} bpm`)),
     ...(sm.moving>=300   // erst ab 5 Minuten Fahrzeit wird zum Speichern gefragt
-      ?[h('p',{style:'margin-top:12px'},'Einheit im Logbuch speichern?'),
+      ?[h('p',{style:'margin-top:12px'},'Einheit im Logbuch speichern?'),rpeInput(sm),
         h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>done(false)},'Verwerfen'),h('button',{class:'btn primary',onclick:()=>done(true)},'Speichern'))]
       :[h('div',{class:'btnrow'},h('button',{class:'btn primary',onclick:()=>done(false)},'Fertig'))])],()=>{});
 }
@@ -1805,17 +1821,11 @@ async function renderLog(){
 }
 /* ───────── Einheit ansehen ───────── */
 V.logd={enter(p){openRun(p.id)},redraw(){drawLd()}};
-const ld={id:null,sm:null,n:0,show:{w:1,h:1,c:0,plan:1},color:'p',smooth:10,cur:null,cv:null,A:null,Z:null,ftp:250,L:36,pw:0};
-/* Normalized Power: 30-s-Gleitmittel der Leistung (nur Fahrzeit, Pausen ausgeschlossen) → 4. Potenz → Mittel → 4. Wurzel */
-function normPower(w){
-  if(!w.length)return null;
-  if(w.length<30)return Math.round(w.reduce((a,b)=>a+b,0)/w.length);
-  let s=0,sum4=0,c=0;
-  for(let i=0;i<w.length;i++){s+=w[i];if(i>=30)s-=w[i-30];if(i>=29){sum4+=Math.pow(s/30,4);c++}}
-  return Math.round(Math.pow(sum4/c,.25));
-}
+const ld={id:null,sm:null,n:0,show:{w:1,h:1,c:0,plan:1},color:'p',cur:null,cv:null,wg:null,A:null,Z:null,ftp:250,maxHr:190,L:36,pw:0};
+const LDC={w:'#7c5cff',h:'#26204d',c:'#ff4f8b'};
+/* Normalized Power: Mittel der 4. Potenz der Leistung (nur Fahrzeit) → 4. Wurzel */
+const normPower=w=>w.length?Math.round(Math.pow(w.reduce((a,b)=>a+Math.pow(b,4),0)/w.length,.25)):null;
 function smoothArr(a,k){
-  if(k<=1)return a.slice();
   const o=new Array(a.length).fill(null);let s=0,c=0;
   for(let i=0;i<a.length;i++){
     const v=a[i];if(v!=null){s+=v;c++}
@@ -1837,74 +1847,68 @@ function analyzeRun(sm,rec){
   const col=(i,mn)=>act.map(r=>r[i]).filter(v=>v!=null&&v>=mn);
   const w=col(2,0),hr=col(4,1),c=col(3,0);
   const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null,max=a=>a.length?Math.max(...a):null;
-  const ftp=sm.ftp||S.settings.ftp,Z=hrZones(sm.lthr||lthr(),sm.hrMax||S.settings.maxHr);
+  const ftp=sm.ftp||S.settings.ftp,maxHr=sm.hrMax||S.settings.maxHr,Z=hrZones(sm.lthr||lthr(),maxHr);
   const pz=new Array(7).fill(0),hz=new Array(5).fill(0);
   w.forEach(v=>pz[pwrPos(v/ftp*100).i]++);hr.forEach(v=>hz[hrPos(v,Z).i]++);
-  return{rows,ftp,Z,pz,hz,moving:act.length,avgW:avg(w),maxW:max(w),np:normPower(w),avgHr:avg(hr),maxHr:max(hr),avgRpm:avg(c),hasHr:hr.length>0};
+  return{rows,ftp,maxHr,Z,pz,hz,moving:act.length,avgW:avg(w),maxW:max(w),np:normPower(w),kj:w.length?Math.round(w.reduce((a,b)=>a+b,0)/1000):null,
+    avgHr:avg(hr),maxHr2:max(hr),avgRpm:avg(c),hasHr:hr.length>0};
 }
 async function openRun(id){
   const host=$('#logd-body');host.replaceChildren();ld.cur=null;ld.id=id;
   const sm=(await runList()).find(r=>r.id===id);
   if(!sm){toast('Einheit nicht gefunden');history.back();return}
   const d=new Date(sm.start);
-  $('#logd-t').textContent=sm.name;
-  $('#logd-s').textContent=`${WD[d.getDay()]} ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())} Uhr${sm.status==='aborted'?' · abgebrochen':''}`;
-  host.append(h('div',{class:'hint'},'Lade…'));
+  const head=h('div',{style:'margin:2px 2px 16px'},h('div',{style:'font-size:27px;font-weight:300;line-height:1.2'},sm.name),
+    h('div',{class:'cm'},ic('clock',14),`${WD[d.getDay()]} ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())}${sm.status==='aborted'?' · abgebrochen':''}`));
+  host.append(head,h('div',{class:'hint'},'Lade…'));
   const rec=await runGet(id);
   if(ld.id!==id||cur()!=='logd')return;
-  host.replaceChildren();
-  const A=analyzeRun(sm,rec);ld.sm=sm;ld.A=A;ld.ftp=A.ftp;ld.Z=A.Z;
+  host.replaceChildren(head);
+  const A=analyzeRun(sm,rec);ld.sm=sm;ld.A=A;ld.ftp=A.ftp;ld.Z=A.Z;ld.maxHr=A.maxHr;
   const kpi=(l,v,u)=>h('div',{class:'kpi'},h('small',{},l),h('b',{},v==null?'–':String(v),v!=null&&u&&h('i',{},u)));
   host.append(h('div',{class:'glass pad'},h('div',{class:'kpis'},
-    kpi('Dauer',fmtTime(sm.elapsed)),kpi('Fahrzeit',fmtTime(A.moving||sm.moving||0)),
+    kpi('Dauer',fmtTime(A.moving||sm.moving||0)),kpi('Arbeit',A.kj,'kJ'),
     kpi('Ø Leistung',A.avgW??sm.avgW,'W'),kpi('NP',A.np,'W'),
-    kpi('Max. Leistung',A.maxW??sm.maxW,'W'),kpi('Ø Herzfrequenz',A.avgHr??sm.avgHr,'bpm'),
-    kpi('Max. Herzfrequenz',A.maxHr??sm.maxHr,'bpm'),kpi('Ø Trittfrequenz',A.avgRpm??sm.avgRpm,'rpm')),
-    h('div',{class:'hint',style:'margin-bottom:0'},'NP (Normalized Power): 30-s-Gleitmittel der Leistung, 4. Potenz, Mittelwert, 4. Wurzel. Pausen zählen nicht mit.')));
+    kpi('Max. Leistung',A.maxW??sm.maxW,'W'),kpi('Ø Trittfrequenz',A.avgRpm??sm.avgRpm,'rpm'),
+    kpi('Ø Herzfrequenz',A.avgHr??sm.avgHr,'bpm'),kpi('Max. Herzfrequenz',A.maxHr2??sm.maxHr,'bpm'),
+    sm.rpe!=null&&kpi('Gefühlte Anstrengung',`${sm.rpe} / 5`))));
   if(!A.rows.length){host.append(h('div',{class:'hint'},'Die Sekundenwerte dieser Einheit sind auf diesem Gerät nicht verfügbar.'))}
   else{
-    /* Daten für das Diagramm: 1 Wert pro Sekunde, Pausen = null/Lücke */
     const R=A.rows;ld.n=R.length;
     ld.raw={w:R.map(r=>r[6]?null:r[2]),c:R.map(r=>r[6]?null:r[3]),h:R.map(r=>r[6]||!r[4]?null:r[4]),g:R.map(r=>r[6]?null:r[5]),p:R.map(r=>r[6]?1:0)};
-    ld.show.h=A.hasHr?ld.show.h:0;
-    const read=h('div',{class:'ldread'}),cv=h('canvas',{class:'ldcv'}),chips=h('div',{class:'ldchips'});
-    ld.cv=cv;ld.read=read;prepLd();
-    const chip=(k,label,col)=>{const b=h('button',{type:'button',class:'chip'+(ld.show[k]?' sel':''),onclick:()=>{ld.show[k]=ld.show[k]?0:1;b.classList.toggle('sel',!!ld.show[k]);drawLd()}},h('i',{style:`background:${col}`}),label);return b};
-    chips.append(chip('w','Leistung','#7c5cff'),...(A.hasHr?[chip('h','Herzfrequenz','#26204d')]:[]),chip('c','Trittfrequenz','#0e8f7e'),chip('plan','Plan','rgba(108,101,146,.45)'));
-    host.append(h('div',{class:'sub'},'Verlauf'),h('div',{class:'glass pad'},chips,read,cv,
-      h('div',{class:'ldlab',style:'margin-top:12px'},'Einfärben nach Zone'),
-      segmented([['n','Aus'],['p','Leistung'],...(A.hasHr?[['h','Herzfrequenz']]:[])],ld.color==='h'&&!A.hasHr?'n':ld.color,k=>{ld.color=k;drawLd()},'sm'),
-      h('div',{class:'ldlab',style:'margin-top:12px'},'Glättung'),
-      segmented([[1,'Roh'],[10,'10 s'],[30,'30 s']],ld.smooth,k=>{ld.smooth=+k;prepLd();drawLd()},'sm'),
-      h('div',{class:'hint',style:'margin-bottom:0'},'Zum Ablesen im Diagramm ziehen. Graue Fläche = Plan, graue Streifen = Pausen.')));
-    const rect=()=>{};
+    ld.s={w:ld.raw.w,c:smoothArr(ld.raw.c,30),h:ld.raw.h,g:ld.raw.g,p:ld.raw.p};   // alles roh, nur die Trittfrequenz 30 s geglättet
+    ld.show.h=A.hasHr?ld.show.h:0;if(!A.hasHr)ld.color='p';
+    const cv=h('canvas',{class:'ldcv'}),wg=h('div',{class:'glass ldwg'}),chips=h('div',{class:'ldchips'});
+    ld.cv=cv;ld.wg=wg;
+    const chip=(k,sym,label)=>{const b=h('button',{type:'button','aria-label':label,class:'chip'+(ld.show[k]?' sel':'')},ic(sym,20),h('span',{html:I(ld.show[k]?'eye':'eyeoff',20),style:'display:inline-flex'}));
+      b.addEventListener('click',()=>{ld.show[k]=ld.show[k]?0:1;b.classList.toggle('sel',!!ld.show[k]);b.lastChild.innerHTML=I(ld.show[k]?'eye':'eyeoff',20);drawLd()});return b};
+    chips.append(chip('w','bolt','Leistung'),...(A.hasHr?[chip('h','heart','Herzfrequenz')]:[]),chip('c','cycle','Trittfrequenz'),chip('plan','target','Plan'));
+    host.append(h('div',{class:'glass pad',style:'margin-top:0'},chips,h('div',{style:'position:relative'},cv,wg),
+      A.hasHr&&h('div',{class:'ldlab',style:'margin-top:14px'},'Einfärben nach Zone'),
+      A.hasHr&&segmented([['p','Leistung'],['h','Herzfrequenz']],ld.color,k=>{ld.color=k;drawLd()},'sm')));
     const at=e=>{const r=cv.getBoundingClientRect();ld.cur=clamp(Math.round((e.clientX-r.left-ld.L)/ld.pw*(ld.n-1)),0,ld.n-1);drawLd()};
     cv.addEventListener('pointerdown',e=>{try{cv.setPointerCapture(e.pointerId)}catch(x){}at(e)});
     cv.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')at(e)});
     requestAnimationFrame(drawLd);
-    /* Zonenverteilung */
-    const zcard=(title,names,cols,secs)=>{
+    const zcard=(title,cols,secs)=>{
       const tot=secs.reduce((a,b)=>a+b,0)||1,mx=Math.max(...secs,1);
-      return[h('div',{class:'sub'},title),h('div',{class:'glass pad'},...secs.map((s,i)=>h('div',{class:'zd',style:i?'':'margin-top:0'},
-        h('div',{class:'zt'},h('span',{},h('b',{},`Z${i+1}`),' ',names[i]),h('span',{},s?`${fmtTime(s)} · ${Math.round(s/tot*100)} %`:'–')),
-        h('div',{class:'zbar'},h('i',{style:`width:${s/mx*100}%;background:${cols[i]}`})))))];
+      return[h('div',{class:'sub'},title),h('div',{class:'glass pad'},...secs.map((s,i)=>h('div',{class:'zd'},h('b',{},`Z${i+1}`),
+        h('div',{class:'zbar'},h('i',{style:`width:${s/mx*100}%;background:${cols[i]}`})),h('span',{},s?`${fmtTime(s)} · ${Math.round(s/tot*100)} %`:'–'))))];
     };
-    host.append(...zcard('Zeit in Leistungszonen',PWZ_NAMES,PWZ_COL,A.pz));
-    if(A.hasHr)host.append(...zcard('Zeit in Herzfrequenzzonen',HRZ_NAMES,HRZ_COL,A.hz));
+    host.append(...zcard('Leistungszonen',PWZ_COL,A.pz));
+    if(A.hasHr)host.append(...zcard('Herzfrequenzzonen',HRZ_COL,A.hz));
   }
   host.append(h('div',{style:'margin-top:22px;display:flex'},h('button',{class:'btn danger',onclick:async()=>{
     if(!await confirmDialog({title:'Einheit löschen?',text:`„${sm.name}“ vom ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} wird endgültig gelöscht${Cloud.name()?' (auch im Konto)':''}.`,ok:'Löschen',danger:true}))return;
     await runDelete(id);Cloud.deleteRun(id);toast('Einheit gelöscht');history.back();
   }},'Einheit löschen')));
 }
-function prepLd(){
-  const k=ld.smooth,r=ld.raw;
-  ld.s={w:smoothArr(r.w,k),c:smoothArr(r.c,k),h:r.h,g:r.g,p:r.p};
-}
+/* Tippen außerhalb des Diagramms blendet Strich, Punkte und Widget aus */
+document.addEventListener('pointerdown',e=>{if(cur()==='logd'&&ld.cur!=null&&ld.cv&&!ld.cv.contains(e.target)){ld.cur=null;drawLd()}});
 function drawLd(){
   const cv=ld.cv;if(!cv||!cv.isConnected||!ld.s)return;
-  const box=cv.parentNode.clientWidth-32;if(box<=0)return;
-  const Wd=box,H=250,dpr=window.devicePixelRatio||1,sh=ld.show,s=ld.s,n=ld.n,ftp=ld.ftp,Z=ld.Z;
+  const Wd=cv.parentNode.clientWidth;if(Wd<=0)return;
+  const H=250,dpr=window.devicePixelRatio||1,sh=ld.show,s=ld.s,n=ld.n,ftp=ld.ftp,Z=ld.Z;
   cv.width=Math.round(Wd*dpr);cv.height=Math.round(H*dpr);cv.style.height=H+'px';
   const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,Wd,H);
   const useH=sh.h,useC=sh.c,right=useH||useC;
@@ -1913,66 +1917,59 @@ function drawLd(){
   const step=top>500?100:top>250?50:25,yMax=Math.ceil(top/step)*step;
   const Y=v=>T+ph*(1-v/yMax),X=(j,len)=>L+j/Math.max(1,len-1)*pw;
   g.font='10.5px Outfit,Roboto,sans-serif';g.textBaseline='middle';
-  /* Raster + linke Achse (Watt) */
   g.lineWidth=1;
   for(let v=0;v<=yMax;v+=step){const y=Math.round(Y(v))+.5;g.strokeStyle='rgba(108,101,146,.13)';g.beginPath();g.moveTo(L,y);g.lineTo(L+pw,y);g.stroke();
     g.fillStyle='#a49fc4';g.textAlign='right';g.fillText(String(v),L-6,y)}
-  /* x-Achse */
   const xs=[60,120,300,600,900,1800,3600,7200].find(t=>n/t<=6)||7200;g.textAlign='center';g.fillStyle='#a49fc4';
   for(let t=0;t<=n;t+=xs){const x=X(t,n);g.fillText(t===0?'0':Math.round(t/60)+' min',Math.min(Math.max(x,L+10),L+pw-12),H-9)}
   const m=Math.max(2,Math.min(n,Math.floor(pw*2)));
   const col=a=>reduceArr(a,m,false),len=Math.min(n,m);
-  /* Pausen */
   const P=reduceArr(s.p,m,true);g.fillStyle='rgba(108,101,146,.16)';
   for(let j=0;j<len;j++)if(P[j]){const x0=X(j,len),x1=X(j+1,len);g.fillRect(x0,T,Math.max(1,x1-x0),ph)}
-  /* Plan (graue Fläche, je zusammenhängendem Abschnitt ein Polygon) */
   if(sh.plan){const G=col(s.g);g.fillStyle='rgba(108,101,146,.15)';
     for(let j=0;j<len;){if(G[j]==null){j++;continue}let k=j;while(k<len&&G[k]!=null)k++;
       g.beginPath();g.moveTo(X(j,len),Y(0));for(let q=j;q<k;q++)g.lineTo(X(q,len),Y(G[q]));g.lineTo(X(k-1,len),Y(0));g.fill();j=k}}
-  /* Leistung: Fläche + Linie; bei Zonenfärbung je Segment nach Zone (Flächen deckend vorgemischt, damit keine Nähte entstehen) */
-  if(sh.w){const Wv=col(s.w),zc=ld.color==='p';
-    const mix=(hex,a)=>{const n=parseInt(hex.slice(1),16),f=c=>Math.round(255-(255-c)*a);return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`};
-    for(let j=0;j<len-1;j++){const a=Wv[j],b=Wv[j+1];if(a==null||b==null)continue;
-      const c=zc?PWZ_COL[pwrPos((a+b)/2/ftp*100).i]:'#7c5cff';
-      g.fillStyle=mix(c,zc?.8:.22);
-      g.beginPath();g.moveTo(X(j,len),Y(0));g.lineTo(X(j,len),Y(a));g.lineTo(X(j+1,len)+.7,Y(b));g.lineTo(X(j+1,len)+.7,Y(0));g.fill()}
-    for(let j=0;j<len-1;j++){const a=Wv[j],b=Wv[j+1];if(a==null||b==null)continue;
-      g.strokeStyle=zc?PWZ_COL[pwrPos((a+b)/2/ftp*100).i]:'#7c5cff';g.lineWidth=1.8;g.lineCap='round';
-      g.beginPath();g.moveTo(X(j,len),Y(a));g.lineTo(X(j+1,len),Y(b));g.stroke()}}
   /* FTP-Linie */
   g.setLineDash([5,4]);g.strokeStyle='rgba(38,32,77,.35)';g.lineWidth=1;g.beginPath();g.moveTo(L,Y(ftp));g.lineTo(L+pw,Y(ftp));g.stroke();g.setLineDash([]);
   g.fillStyle='rgba(38,32,77,.55)';g.textAlign='left';g.fillText('FTP',L+3,Y(ftp)-7);
-  /* rechte Achse: HF (bpm) oder, ohne HF, Trittfrequenz */
+  /* rechte Achse */
   const hv=s.h.filter(v=>v!=null),cvv=s.c.filter(v=>v!=null);
   let hLo=0,hHi=1,cHi=1;
   if(useH&&hv.length){hLo=Math.floor((Math.min(...hv)-5)/10)*10;hHi=Math.max(hLo+20,Math.ceil((Math.max(...hv)+5)/10)*10)}
   if(useC&&cvv.length)cHi=Math.max(40,Math.ceil(Math.max(...cvv)/20)*20);
   const YH=v=>T+ph*(1-(v-hLo)/(hHi-hLo)),YC=v=>T+ph*(1-v/cHi);
-  if(right){g.textAlign='left';g.fillStyle=useH?'#26204d':'#0e8f7e';
+  if(right){g.textAlign='left';g.fillStyle=useH?LDC.h:LDC.c;
     const lo=useH?hLo:0,hi=useH?hHi:cHi,st=(hi-lo)/4;
     for(let i=0;i<=4;i++)g.fillText(String(Math.round(lo+st*i)),L+pw+5,T+ph*(1-i/4));}
-  if(useC){const C=col(s.c);g.strokeStyle='#0e8f7e';g.lineWidth=1.2;g.beginPath();let on=false;
+  g.lineCap='round';g.lineJoin='round';
+  /* Trittfrequenz (rosa), Leistung (lila / Zonenfarben), Herzfrequenz (dunkel / Zonenfarben): alles dünne Linien */
+  if(useC){const C=col(s.c);g.strokeStyle=LDC.c;g.lineWidth=1.2;g.beginPath();let on=false;
     for(let j=0;j<len;j++){const v=C[j];if(v==null){on=false;continue}const x=X(j,len),y=YC(v);on?g.lineTo(x,y):g.moveTo(x,y);on=true}g.stroke()}
-  if(useH&&hv.length){const Hh=col(s.h),zc=ld.color==='h';g.lineCap='round';
+  if(sh.w){const Wv=col(s.w),zc=ld.color==='p';
+    for(let j=0;j<len-1;j++){const a=Wv[j],b=Wv[j+1];if(a==null||b==null)continue;
+      g.strokeStyle=zc?PWZ_COL[pwrPos((a+b)/2/ftp*100).i]:LDC.w;g.lineWidth=zc?2:1.4;
+      g.beginPath();g.moveTo(X(j,len),Y(a));g.lineTo(X(j+1,len),Y(b));g.stroke()}}
+  if(useH&&hv.length){const Hh=col(s.h),zc=ld.color==='h';
     for(let j=0;j<len-1;j++){const a=Hh[j],b=Hh[j+1];if(a==null||b==null)continue;
-      g.strokeStyle=zc?Z[hrPos((a+b)/2,Z).i].col:'#26204d';g.lineWidth=zc?2.2:1.3;
+      g.strokeStyle=zc?Z[hrPos((a+b)/2,Z).i].col:LDC.h;g.lineWidth=zc?2:1.3;
       g.beginPath();g.moveTo(X(j,len),YH(a));g.lineTo(X(j+1,len),YH(b));g.stroke()}}
-  /* Cursor + Anzeige */
-  const rd=ld.read;
-  if(ld.cur==null){rd.replaceChildren(h('span',{},'Im Diagramm ziehen, um Werte abzulesen'));return}
+  /* Strich, Punkte und Widget */
+  const wg=ld.wg;
+  if(ld.cur==null){wg.style.display='none';return}
   const i=ld.cur,x=L+i/Math.max(1,n-1)*pw;
-  g.strokeStyle='rgba(38,32,77,.6)';g.lineWidth=1;g.setLineDash([3,3]);g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.setLineDash([]);
-  const wv=s.w[i],hh=s.h[i],cc=s.c[i],gg=s.g[i],parts=[h('b',{},fmtTime(i))];
-  if(s.p[i])parts.push(h('span',{},'pausiert'));
+  g.strokeStyle='rgba(38,32,77,.55)';g.lineWidth=1;g.setLineDash([3,3]);g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.setLineDash([]);
+  const dot=(y,c)=>{g.fillStyle=c;g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,4.5,0,7);g.fill();g.stroke()};
+  const wv=s.w[i],hh=s.h[i],cc=s.c[i],gg=s.g[i],rows=[],paused=!!s.p[i];
+  if(paused)rows.push(h('div',{class:'r'},'pausiert'));
   else{
-    if(wv!=null){const pc=Math.round(wv/ftp*100);parts.push(h('span',{},h('b',{},`${Math.round(wv)} W`),` · ${pc} % · Z${pwrPos(pc).i+1}`));
-      g.fillStyle='#fff';g.strokeStyle='#7c5cff';g.lineWidth=2;g.beginPath();g.arc(x,Y(wv),4,0,7);g.fill();g.stroke()}
-    if(hh!=null){parts.push(h('span',{},h('b',{},`${Math.round(hh)} bpm`),` · Z${hrPos(hh,Z).i+1}`));
-      if(useH){g.fillStyle='#fff';g.strokeStyle='#26204d';g.beginPath();g.arc(x,YH(hh),3.5,0,7);g.fill();g.stroke()}}
-    if(cc!=null)parts.push(h('span',{},h('b',{},`${Math.round(cc)} rpm`)));
-    if(gg!=null)parts.push(h('span',{},`Plan ${gg} W`));
+    if(sh.w&&wv!=null){dot(Y(wv),ld.color==='p'?PWZ_COL[pwrPos(wv/ftp*100).i]:LDC.w);rows.push(h('div',{class:'r'},ic('bolt',18),h('b',{},`${Math.round(wv)} W`)))}
+    if(useH&&hh!=null){dot(YH(hh),ld.color==='h'?Z[hrPos(hh,Z).i].col:LDC.h);rows.push(h('div',{class:'r'},ic('heart',18),h('b',{},`${Math.round(hh)} bpm`),` · ${Math.round(hh/ld.maxHr*100)} %`))}
+    if(useC&&cc!=null){dot(YC(cc),LDC.c);rows.push(h('div',{class:'r'},ic('cycle',18),h('b',{},`${Math.round(cc)} rpm`)))}
+    if(sh.plan&&gg!=null)rows.push(h('div',{class:'r'},ic('target',18),h('b',{},`${gg} W`)))
   }
-  rd.replaceChildren(...parts);
+  wg.replaceChildren(h('div',{class:'t'},fmtTime(i)),...rows);
+  wg.style.display='block';wg.style.left=wg.style.right='';
+  if(x<L+pw/2)wg.style.right='6px';else wg.style.left='6px';
 }
 
 $('#btn-log').addEventListener('click',()=>go('log'));
