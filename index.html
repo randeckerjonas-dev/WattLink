@@ -335,8 +335,86 @@ details[open] summary::after{transform:rotate(225deg)}
 .sheet p{font-size:14.5px;color:var(--ink2);line-height:1.5;margin-bottom:6px}
 .sheet .btnrow{display:flex;gap:10px;margin-top:18px}
 .sheet .stat{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(108,101,146,.12);font-size:15px}
-#toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-30px);z-index:80;padding:11px 18px;font-size:14px;opacity:0;pointer-events:none;transition:.3s;max-width:88vw;text-align:center;border-radius:99px;background:rgba(255,255,255,.85)}
+#toast{width:max-content;position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-30px);z-index:80;padding:11px 18px;font-size:14px;opacity:0;pointer-events:none;transition:.3s;max-width:88vw;text-align:center;border-radius:99px;background:rgba(255,255,255,.85)}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+/* Skeleton + Spinner */
+.skel{position:relative;overflow:hidden;background:rgba(108,101,146,.13);border-radius:8px}
+.skel::after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:shim 1.4s ease-in-out infinite}
+@keyframes shim{to{transform:translateX(100%)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn.busy,.btn.busy:disabled{position:relative;color:transparent!important;pointer-events:none;opacity:1}
+.btn.busy>*{visibility:hidden}
+.btn.busy::after{content:'';position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:2px solid rgba(139,92,246,.25);border-top-color:var(--a2);animation:spin .7s linear infinite}
+.btn.primary.busy::after{border-color:rgba(255,255,255,.4);border-top-color:#fff}
+.btn:disabled{opacity:.45;pointer-events:none}
+.spin{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid rgba(139,92,246,.25);border-top-color:var(--a2);animation:spin .7s linear infinite;flex:none}
+/* Sync-Indikator (Wolke) */
+.syncind{width:38px;height:38px;border-radius:50%;display:none;place-items:center;padding:0;flex:none;border:1px solid var(--stroke)}
+.syncind.show{display:grid}
+.si-ok{color:#14a273}.si-sync{color:var(--a2)}.si-err{color:#e11d48}
+.si-sync svg{animation:spin 1.1s linear infinite}
+.siico{display:inline-flex;width:22px;justify-content:center;flex:none}
+/* Auth (Fullscreen) */
+#auth{background:transparent}
+.auth-top{display:flex;align-items:center;padding:12px 18px 0;flex:none}
+#auth .scroll{padding:6px 22px 40px}
+.auth-h{font-size:32px;font-weight:200;margin:20px 2px 6px;letter-spacing:.2px}
+.auth-s{font-size:14px;color:var(--ink2);margin:0 2px 20px;line-height:1.5}
+.af{margin-bottom:14px}
+.af>label{display:block;font-size:13px;color:var(--ink2);margin:0 4px 6px}
+.afi{display:flex;align-items:center;gap:10px;height:52px;padding:0 8px 0 14px;border-radius:18px;color:var(--ink3);transition:border-color .2s,box-shadow .2s}
+.afi:focus-within{box-shadow:0 0 0 2px rgba(139,92,246,.35)}
+.afi input{flex:1;min-width:0;height:100%;border:0;background:transparent;font:inherit;font-size:16px;color:var(--ink);outline:none}
+.afi input::placeholder{color:var(--ink3)}
+.afi.bad{border-color:#f43f5e;box-shadow:0 0 0 2px rgba(244,63,94,.18)}
+.afi.good{border-color:#2ecf93}
+.afp{color:var(--ink2);margin-right:-6px;font-size:16px}
+.afm{font-size:12.5px;margin:6px 6px 0;line-height:1.35;min-height:0}
+.afm.bad{color:#d6336c}.afm.good{color:#14a273}.afm.hint{color:var(--ink2)}
+.afm:empty{display:none}
+.eye{width:38px;height:38px;border-radius:50%;border:0;background:none;color:var(--ink2);display:grid;place-items:center;padding:0;flex:none}
+.afi .spin{margin-right:10px}
+.wfull{width:100%;flex:none}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--ink3);font-size:13px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(108,101,146,.2)}
+.alink{border:0;background:none;color:var(--a2);font-size:14px;padding:6px 4px}
+.auth-sw{text-align:center;margin-top:18px;font-size:14px;color:var(--ink2)}
+.auth-err{margin:0 4px 12px;font-size:13.5px;color:#d6336c;line-height:1.4}
+.auth-err:empty{display:none}
+.auth-ok{padding:18px;font-size:15px;line-height:1.5;margin-bottom:16px}
+/* Profil */
+.page.tab>#set-body{padding-top:16px}
+.pcard{padding:22px 16px 18px;margin-bottom:14px;position:relative;text-align:center}
+.pcard .syncind{position:absolute;top:12px;right:12px}
+.pav{position:relative;width:96px;height:96px;margin:0 auto}
+.pav .avatar{width:96px;height:96px}
+.pen{position:absolute;right:-4px;bottom:-4px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--a2);padding:0;border:1px solid var(--stroke)}
+.avatar.loading{position:relative}
+.avatar.loading::after{content:'';position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.55)}
+.avatar.loading::before{content:'';position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;z-index:1;border-radius:50%;border:2px solid rgba(139,92,246,.25);border-top-color:var(--a2);animation:spin .7s linear infinite}
+.pname{font-size:25px;font-weight:300;margin-top:14px;line-height:1.2}
+.puser{font-size:14px;color:var(--ink2);margin-top:3px}
+.pcard .addrow{margin-top:16px}
+.stiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.stile{padding:14px 16px}
+.stile.wide{grid-column:1/-1}
+.stile .sl{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);letter-spacing:.2px}
+.stile .sl .ic{color:var(--a2)}
+.stile .sv{font-size:28px;font-weight:300;margin-top:8px;line-height:1.1;min-height:31px}
+.stile .sv.sm{font-size:21px;line-height:31px}
+.stile .sv i{font-style:normal;font-size:14px;color:var(--ink2);margin-left:3px}
+.streak{display:flex;align-items:center;gap:16px}
+.flame{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;flex:none;background:rgba(108,101,146,.12);color:var(--ink3)}
+.flame.on{background:linear-gradient(135deg,rgba(255,179,71,.32),rgba(255,77,94,.26))}
+.streak .sv{margin-top:4px}
+.sk2{font-size:12.5px;color:var(--ink2);margin-top:4px;line-height:1.35}
+.wdots{display:flex;gap:7px;margin-top:14px;align-items:center}
+.wdots i{width:11px;height:11px;border-radius:50%;background:rgba(108,101,146,.18)}
+.wdots i.on{background:linear-gradient(135deg,#ffb347,#ff4d5e)}
+.wdots i.cur{box-shadow:0 0 0 2px rgba(255,159,67,.5)}
+.wdots span{font-size:11.5px;color:var(--ink3);margin-left:4px}
+.danglink{display:block;margin:20px auto 2px;border:0;background:none;font-size:12px;color:var(--ink3);padding:8px;text-decoration:underline;text-decoration-color:rgba(164,159,196,.5)}
 </style>
 </head>
 <body>
@@ -347,6 +425,8 @@ details[open] summary::after{transform:rotate(225deg)}
     <header class="topbar">
       <button class="avatar glass" id="home-avatar" data-i="user" data-s="24" aria-label="Profil"></button>
       <div class="hgreet"><div class="hg1" id="home-greet"></div><div class="hg2" id="home-user"></div></div>
+      <div class="grow"></div>
+      <button class="syncind glass" id="home-sync" type="button" aria-label="Synchronisierung"></button>
     </header>
     <div class="statusrow">
       <button class="pill glass" id="conn"><span class="dot"></span><span id="conn-t">Verbinden</span></button>
@@ -469,6 +549,11 @@ details[open] summary::after{transform:rotate(225deg)}
     <div class="scroll" id="logd-body"></div>
   </section>
 
+  <section class="page" id="auth">
+    <div class="auth-top"><button class="iconbtn glass" id="auth-back" type="button" data-i="back" aria-label="Zurück"></button></div>
+    <div class="scroll" id="auth-body"></div>
+  </section>
+
   <nav class="nav glass" id="nav" aria-label="Navigation">
     <i class="ind"></i>
     <button type="button" data-tab="home"><span data-i="home" data-s="24"></span><span>Home</span></button>
@@ -485,6 +570,7 @@ details[open] summary::after{transform:rotate(225deg)}
 </div>
 <input type="file" id="file" accept=".json,application/json" hidden>
 <input type="file" id="bfile" accept=".json,application/json" hidden>
+<input type="file" id="avfile" accept="image/*" hidden>
 <div id="toast" class="glass"></div>
 
 <script>
@@ -553,6 +639,15 @@ const PATHS={
   share:'<path d="M12 15V4M8 8l4-4 4 4M5 12v7h14v-7"/>',
   shrink:'<path d="M14 10l6-6M14 10V5M14 10h5M10 14l-6 6M10 14v5M10 14H5"/>',
   search:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M3 3l18 18M10.6 5.7A9.5 9.5 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-3.2 4M6.5 7.2A16 16 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.8-.4 4-.9M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  mail:'<rect x="3" y="5.5" width="18" height="13" rx="3"/><path d="M4 8l8 5.5L20 8"/>',
+  lock:'<rect x="5" y="10.5" width="14" height="9.5" rx="3"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
+  at:'<circle cx="12" cy="12" r="3.6"/><path d="M15.6 12v1.4a2.4 2.4 0 0 0 4.8 0V12a8.4 8.4 0 1 0-3.3 6.7"/>',
+  calendar:'<rect x="4" y="5.5" width="16" height="14.5" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+  cloudok:'<path d="M7.5 18.5a4.25 4.25 0 0 1-.55-8.46A6 6 0 0 1 18.1 9.3a4.6 4.6 0 0 1-.6 9.2z"/><path d="M9.6 13.6l1.8 1.8 3.2-3.6"/>',
+  clouderr:'<path d="M7.5 18.5a4.25 4.25 0 0 1-.55-8.46A6 6 0 0 1 18.1 9.3a4.6 4.6 0 0 1-.6 9.2z"/><path d="M12 10.8v3.2M12 16.4v.01"/>',
+  syncarr:'<path d="M20 11a8 8 0 0 0-14.3-3.6L4 9.5M4 4v5.5h5.5M4 13a8 8 0 0 0 14.3 3.6l1.7-2.1M20 20v-5.5h-5.5"/>',
   sparkle:'<g fill="currentColor" stroke="none"><path d="M10.5 3c.6 4.6 2.6 6.6 7.2 7.2-4.6.6-6.6 2.6-7.2 7.2-.6-4.6-2.6-6.6-7.2-7.2C7.9 9.6 9.9 7.6 10.5 3z"/><path d="M18.5 14.5c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3z"/></g>'
 };
 const I=(n,s=22)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${PATHS[n]||''}</svg>`;
@@ -618,22 +713,44 @@ function save(){S._ts=Date.now();persistLocal();Cloud.queue()}   // _ts = Zeitst
 S=load();
 
 /* ───────── Konto + Cloud (Firebase Auth + Firestore) ─────────
-   Einrichtung: siehe Anleitung – die vier Werte aus der Firebase-Konsole (Projekteinstellungen → Web-App) hier eintragen.
-   Benutzername wird intern zu „name@wattlink.app“ (Firebase will eine E-Mail); es gibt deshalb kein „Passwort vergessen“. */
+   Anmeldung per E-Mail + Passwort (min. 8 Zeichen) oder Google. Alte Konten (Benutzername → name@wattlink.app) melden sich weiter
+   mit ihrem Benutzernamen an. Profil (Name, @Benutzername, Foto) liegt unter users/{uid}/data/profile, Benutzernamen sind über
+   usernames/{name} eindeutig. Synchronisierung läuft vollautomatisch; Fehler/Offline werden alle 20 s und bei „online“ nachgeholt. */
 const CLOUD={apiKey:'AIzaSyBTDVFp4WB7cqG8Shh6OfLPPbBwD3Sy414',authDomain:'wattlink-8da67.firebaseapp.com',projectId:'wattlink-8da67',appId:'1:767699493106:web:6e381032af457d01e6306b'};
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}return null};
 const withTO=(p,ms=15000)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 const CHUNK=600000;
+const LSKEYS=['wattlink-acct','wattlink-uid','wattlink-profile','wattlink-photo','wattlink-photo-dirty','wattlink-setup'];
 const Cloud={
   on:!!(CLOUD.apiKey&&CLOUD.projectId),sdk:null,user:null,loading:null,listeners:new Set(),
-  st:'',lastOk:0,dirty:false,busy:false,timer:null,unsub:null,pending:null,syncing:false,
+  st:'',lastOk:0,dirty:false,busy:false,timer:null,unsub:null,pending:null,syncing:false,starting:false,
+  authBusy:false,needSetup:false,jobs:new Set(),retryT:null,
   name(){return LS('wattlink-acct')||''},
-  emit(){this.listeners.forEach(f=>f())},
-  setSt(s){this.st=s;this.emit()},
+  prof(){try{return JSON.parse(LS('wattlink-profile'))||{}}catch(e){return{}}},
+  setProf(p){LS('wattlink-profile',JSON.stringify(Object.assign(this.prof(),p)));if(p.username)LS('wattlink-acct',p.username);this.emit()},
+  photo(){return LS('wattlink-photo')||''},
+  isLegacy(u=this.user){return !!(u&&/@wattlink\.app$/i.test(u.email||''))},
+  emit(){this.listeners.forEach(f=>{try{f()}catch(e){}})},
+  setSt(s){this.st=s;if(s==='err')this.armRetry();this.emit()},
+  armRetry(){clearTimeout(this.retryT);this.retryT=setTimeout(()=>this.recover(),20000)},
+  track(p){this.jobs.add(p);this.emit();const d=()=>{this.jobs.delete(p);this.emit()};p.then(d,d);return p},
+  /* Zustand für den Wolken-Indikator: off | ok | sync | err */
+  ind(){
+    if(!this.on||this.needSetup||!(this.name()||this.user))return'off';
+    if(this.st==='err'||navigator.onLine===false||(this.sdk&&!this.user&&!this.authBusy))return'err';
+    if(!this.sdk||!this.user||this.st==='sync'||this.st==='pend'||this.jobs.size||this.syncing)return'sync';
+    return'ok';
+  },
   text(){
-    if(!this.sdk)return this.st==='err'?'Offline – lokale Daten':'Verbinde…';
-    if(!this.user)return this.st==='err'?'Anmeldung nicht möglich':'Verbinde…';
-    return {sync:'Synchronisiere…',pend:'Änderungen werden hochgeladen…',err:'Offline – wird nachgeholt'}[this.st]||('Synchronisiert'+(this.lastOk?` · ${p2(new Date(this.lastOk).getHours())}:${p2(new Date(this.lastOk).getMinutes())}`:''));
+    const s=this.ind();
+    if(s==='err'){
+      if(navigator.onLine===false)return'Offline – wird nachgeholt, sobald du verbunden bist';
+      if(this.sdk&&!this.user)return'Sitzung abgelaufen – bitte neu anmelden';
+      return this.sdk?'Hochladen fehlgeschlagen – wird erneut versucht':'Keine Verbindung – wird erneut versucht';
+    }
+    if(s==='sync')return this.sdk&&this.user?'Synchronisiere…':'Verbinde…';
+    const t=this.lastOk?new Date(this.lastOk):null;
+    return'Alles synchronisiert'+(t?` · ${p2(t.getHours())}:${p2(t.getMinutes())}`:'');
   },
   load(){
     if(this.loading)return this.loading;
@@ -641,20 +758,157 @@ const Cloud={
     this.loading=(async()=>{
       const [a,au,fs]=await Promise.all([import(b+'app.js'),import(b+'auth.js'),import(b+'firestore.js')]);
       const app=a.initializeApp(CLOUD),auth=au.getAuth(app),db=fs.getFirestore(app);
+      try{auth.languageCode='de'}catch(e){}
       this.sdk={au,fs,auth,db};
       await new Promise(res=>{let first=true;au.onAuthStateChanged(auth,u=>{this.onUser(u);if(first){first=false;res()}})});
       return this.sdk;
     })().catch(e=>{this.loading=null;this.sdk=null;this.setSt('err');throw e});
     return this.loading;
   },
-  init(){if(this.on&&this.name())this.load().catch(()=>{})},
+  init(){if(this.on&&(this.name()||LS('wattlink-setup')))this.load().catch(()=>{})},
   async onUser(u){
     this.user=u||null;this.emit();
-    if(u){if(!this.name())LS('wattlink-acct',(u.email||'').split('@')[0]);await this.start()}
-    else{this.stopListen()}
+    if(this.authBusy)return;
+    if(u){
+      await this.loadProfile(u);
+      if(this.needSetup){this.emit();if(cur()!=='auth')go('auth',{mode:'setup'});return}
+      await this.start();
+    }else this.stopListen();
     this.emit();
   },
   stopListen(){if(this.unsub){try{this.unsub()}catch(e){}this.unsub=null}},
+  pref(u=this.user){const {fs,db}=this.sdk;return fs.doc(db,'users',u.uid,'data','profile')},
+  /* Profil laden; fehlt es: alte Konten bekommen ihren Benutzernamen, neue Google-Konten müssen ihn noch wählen */
+  async loadProfile(u){
+    const {fs,db}=this.sdk;this.needSetup=false;
+    const since=u.metadata&&u.metadata.creationTime?Date.parse(u.metadata.creationTime):0,legacy=this.isLegacy(u);
+    let d=null,ok=false;
+    try{const sn=await withTO(fs.getDoc(this.pref(u)));d=sn.exists()?sn.data():null;ok=true}catch(e){}
+    if(d&&d.username){
+      this.setProf({name:d.name||'',username:d.username,email:legacy?'':(u.email||''),since});
+      LS('wattlink-setup',null);
+      if(d.photo)LS('wattlink-photo',d.photo);
+      else if(this.photo())this.pushPhoto();
+      else if(LS('wattlink-photo-dirty'))this.pushPhoto();
+      return;
+    }
+    if(!ok){   // offline: mit dem lokalen Stand weiterarbeiten
+      if(!this.name())this.setProf({username:(u.email||'').split('@')[0],email:legacy?'':(u.email||''),since});
+      return;
+    }
+    if(legacy){
+      const un=(u.email||'').split('@')[0].toLowerCase();
+      try{await withTO(fs.setDoc(fs.doc(db,'usernames',un),{uid:u.uid}))}catch(e){}
+      try{await withTO(fs.setDoc(this.pref(u),{name:'',username:un,created:since||Date.now()}))}catch(e){}
+      this.setProf({name:'',username:un,email:'',since});return;
+    }
+    this.needSetup=true;LS('wattlink-setup','1');
+    this.setProf({name:u.displayName||'',email:u.email||'',since});
+  },
+  async usernameFree(un){   // true = frei, false = vergeben, null = nicht prüfbar
+    try{
+      await this.load();const {fs,db}=this.sdk;
+      const sn=await withTO(fs.getDoc(fs.doc(db,'usernames',un)),8000);
+      return sn.exists()?!!(this.user&&sn.data().uid===this.user.uid):true;
+    }catch(e){return null}
+  },
+  authErr(e){
+    const c=e&&e.code||'',bad='E-Mail/Benutzername oder Passwort falsch';
+    const m={'auth/invalid-credential':bad,'auth/user-not-found':bad,'auth/wrong-password':bad,'auth/invalid-login-credentials':bad,
+      'auth/invalid-email':'Ungültige E-Mail-Adresse','auth/email-already-in-use':'Diese E-Mail-Adresse ist schon registriert',
+      'auth/weak-password':'Passwort zu schwach (mindestens 8 Zeichen)','auth/network-request-failed':'Keine Verbindung',
+      'auth/too-many-requests':'Zu viele Versuche – bitte kurz warten','auth/user-disabled':'Dieses Konto ist gesperrt',
+      'auth/operation-not-allowed':'Diese Anmeldeart ist in Firebase nicht aktiviert','auth/unauthorized-domain':'Diese Domain ist in Firebase nicht autorisiert',
+      'auth/requires-recent-login':'Bitte melde dich neu an und versuche es noch einmal','auth/popup-blocked':'Das Anmelde-Fenster wurde blockiert',
+      'auth/popup-closed-by-user':'','auth/cancelled-popup-request':''}[c];
+    return{msg:m!==undefined?m:('Fehler: '+(c||(e&&e.message)||e)),silent:m===''};
+  },
+  async register(o){
+    await this.load();const {au,auth,fs,db}=this.sdk;
+    const free=await this.usernameFree(o.username);
+    if(free===false)throw{msg:'Benutzername bereits vergeben'};
+    this.authBusy=true;let cred;
+    try{cred=await au.createUserWithEmailAndPassword(auth,o.email,o.pw)}catch(e){this.authBusy=false;throw this.authErr(e)}
+    try{
+      this.user=cred.user;
+      try{await au.updateProfile(cred.user,{displayName:o.name})}catch(e){}
+      try{await withTO(fs.setDoc(fs.doc(db,'usernames',o.username),{uid:cred.user.uid}))}
+      catch(e){if(free!==null){try{await cred.user.delete()}catch(x){}this.user=null;throw{msg:'Benutzername bereits vergeben'}}}
+      await withTO(fs.setDoc(this.pref(cred.user),{name:o.name,username:o.username,created:Date.now()}));
+      this.setProf({name:o.name,username:o.username,email:o.email,since:Date.parse(cred.user.metadata.creationTime)||Date.now()});
+      try{await au.sendEmailVerification(cred.user)}catch(e){}
+    }catch(e){this.authBusy=false;throw e&&e.msg?e:this.authErr(e)}
+    this.authBusy=false;
+  },
+  async login(id,pw){
+    id=(id||'').trim();
+    const email=id.includes('@')?id:id.toLowerCase()+'@wattlink.app';   // ohne @ = altes Benutzernamen-Konto
+    await this.load();const {au,auth}=this.sdk;this.authBusy=true;
+    try{await au.signInWithEmailAndPassword(auth,email,pw)}catch(e){this.authBusy=false;throw this.authErr(e)}
+    try{await this.loadProfile(this.user)}catch(e){}
+    this.authBusy=false;
+  },
+  async google(){
+    await this.load();const {au,auth}=this.sdk;this.authBusy=true;
+    try{await au.signInWithPopup(auth,new au.GoogleAuthProvider())}
+    catch(e){
+      this.authBusy=false;
+      if(e&&e.code==='auth/popup-blocked'){await au.signInWithRedirect(auth,new au.GoogleAuthProvider());return}
+      throw this.authErr(e);
+    }
+    try{await this.loadProfile(this.user)}catch(e){}
+    this.authBusy=false;
+  },
+  async finishSetup(o){
+    const {au,fs,db}=this.sdk,u=this.user;
+    const free=await this.usernameFree(o.username);
+    if(free===false)throw{msg:'Benutzername bereits vergeben'};
+    try{await withTO(fs.setDoc(fs.doc(db,'usernames',o.username),{uid:u.uid}))}catch(e){if(free!==null)throw{msg:'Benutzername bereits vergeben'}}
+    try{await withTO(fs.setDoc(this.pref(u),{name:o.name,username:o.username,created:Date.now()}))}catch(e){throw this.authErr(e)}
+    try{await au.updateProfile(u,{displayName:o.name})}catch(e){}
+    this.setProf({name:o.name,username:o.username,email:u.email||'',since:Date.parse(u.metadata.creationTime)||Date.now()});
+    this.needSetup=false;LS('wattlink-setup',null);
+    if(this.photo())this.pushPhoto();
+  },
+  async reset(email){
+    await this.load();const {au,auth}=this.sdk;
+    try{await au.sendPasswordResetEmail(auth,email)}
+    catch(e){if(e&&e.code==='auth/user-not-found')return;throw this.authErr(e)}   // Existenz des Kontos nicht verraten
+  },
+  async resendVerify(){try{await this.sdk.au.sendEmailVerification(this.user)}catch(e){throw this.authErr(e)}},
+  async reloadUser(){try{await this.user.reload();this.emit()}catch(e){throw this.authErr(e)}return this.user.emailVerified},
+  async reauth(pw){
+    const {au}=this.sdk,u=this.user;
+    try{
+      if((u.providerData||[]).some(x=>x.providerId==='password'))await au.reauthenticateWithCredential(u,au.EmailAuthProvider.credential(u.email,pw));
+      else await au.reauthenticateWithPopup(u,new au.GoogleAuthProvider());
+    }catch(e){throw this.authErr(e)}
+  },
+  async cancelSetup(){
+    try{await this.sdk.au.signOut(this.sdk.auth)}catch(e){}
+    this.user=null;this.needSetup=false;['wattlink-setup','wattlink-profile'].forEach(k=>LS(k,null));this.emit();
+  },
+  hasPassword(){return !!(this.user&&(this.user.providerData||[]).some(x=>x.providerId==='password'))},
+  async addEmail(email,pw){
+    await this.reauth(pw);
+    try{await this.sdk.au.verifyBeforeUpdateEmail(this.user,email)}catch(e){throw this.authErr(e)}
+  },
+  async updateName(name){
+    const {au,fs}=this.sdk;
+    try{await withTO(fs.setDoc(this.pref(),{name},{merge:true}))}catch(e){throw this.authErr(e)}
+    try{await au.updateProfile(this.user,{displayName:name})}catch(e){}
+    this.setProf({name});
+  },
+  /* Profilbild: lokal sofort, in die Cloud automatisch (bei Fehler später erneut) */
+  async setPhoto(url){
+    LS('wattlink-photo',url);this.emit();
+    if(this.user&&this.sdk&&!this.needSetup)await this.pushPhoto();else LS('wattlink-photo-dirty','1');
+  },
+  async pushPhoto(){
+    const {fs}=this.sdk,ph=this.photo();if(!this.user||!ph)return;
+    try{await this.track(withTO(fs.setDoc(this.pref(),{photo:ph},{merge:true})));LS('wattlink-photo-dirty',null)}
+    catch(e){LS('wattlink-photo-dirty','1');this.setSt('err')}
+  },
   ref(){const {fs,db}=this.sdk;return fs.doc(db,'users',this.user.uid,'data','state')},
   async push(){
     const ts=S._ts||(S._ts=Date.now());persistLocal();
@@ -668,6 +922,8 @@ const Cloud={
   },
   refreshUI(){if(TABS.includes(cur()))render()},
   async start(){
+    if(this.starting)return;
+    this.starting=true;
     const uid=this.user.uid;this.setSt('sync');
     try{
       const snap=await withTO(this.sdk.fs.getDoc(this.ref()));
@@ -685,9 +941,20 @@ const Cloud={
       LS('wattlink-uid',uid);
       await this.syncRuns();
       this.listen();
+      if(this.dirty)this.flush();
       this.lastOk=Date.now();this.setSt('');
       if(cur()==='stats')render();
     }catch(e){this.setSt('err')}
+    this.starting=false;
+  },
+  /* Nach Fehler/Offline: automatisch erneut versuchen (alle 20 s und sobald das Netz zurück ist) */
+  async recover(){
+    clearTimeout(this.retryT);
+    if(!this.on||!(this.name()||this.user||LS('wattlink-setup')))return;
+    if(navigator.onLine===false){this.armRetry();this.emit();return}
+    if(!this.sdk){this.load().catch(()=>{});return}
+    if(!this.user){this.emit();return}
+    await this.start();
   },
   listen(){
     this.stopListen();
@@ -704,13 +971,16 @@ const Cloud={
   async flush(){
     if(!this.dirty||!this.user||!this.sdk||this.busy)return;
     this.busy=true;this.dirty=false;
-    try{await this.push();this.lastOk=Date.now();this.setSt(this.dirty?'pend':'')}
+    try{await this.track(this.push());this.lastOk=Date.now();this.setSt(this.dirty?'pend':'')}
     catch(e){this.dirty=true;this.setSt('err')}
     this.busy=false;
     if(this.dirty&&this.st!=='err')this.flush();
   },
-  async pushRun(sm,rec){
-    if(!this.user||!this.sdk)return false;
+  pushRun(sm,rec){
+    if(!this.user||!this.sdk)return Promise.resolve(false);
+    return this.track(this._pushRun(sm,rec).then(ok=>{if(!ok)this.setSt('err');return ok}));
+  },
+  async _pushRun(sm,rec){
     try{
       const {fs,db}=this.sdk,u=this.user.uid,s=JSON.stringify(rec),n=Math.max(1,Math.ceil(s.length/CHUNK));
       for(let i=0;i<n;i++)await withTO(fs.setDoc(fs.doc(db,'users',u,'recs',`${sm.id}_${i}`),{data:s.slice(i*CHUNK,(i+1)*CHUNK)}),30000);
@@ -738,9 +1008,20 @@ const Cloud={
       return rec;
     }catch(e){return null}
   },
+  async pullRec(id){
+    try{
+      const {fs,db}=this.sdk,u=this.user.uid,sd=await withTO(fs.getDoc(fs.doc(db,'users',u,'runs',id)));
+      if(!sd.exists())return null;
+      const n=sd.data().n||1;let s='';
+      for(let i=0;i<n;i++){const d=await withTO(fs.getDoc(fs.doc(db,'users',u,'recs',`${id}_${i}`)),30000);if(!d.exists())return null;s+=d.data().data}
+      const rec=JSON.parse(s);
+      try{await idbTx('recs','readwrite',tx=>tx.objectStore('recs').put(rec,id))}catch(e){}
+      return rec;
+    }catch(e){return null}
+  },
   async syncRuns(){
     if(!this.user||!this.sdk||this.syncing)return false;
-    this.syncing=true;let changed=false;
+    this.syncing=true;this.emit();let changed=false;
     try{
       const {fs,db}=this.sdk,snap=await withTO(fs.getDocs(fs.collection(db,'users',this.user.uid,'runs'))),remote=new Map();
       const tomb=new Set();
@@ -748,42 +1029,56 @@ const Cloud={
       const local=await runList(),lm=new Set(local.map(r=>r.id));
       for(const [id,sm] of remote)if(!lm.has(id)){await runPutSum(sm);changed=true}
       for(const sm of local)if(tomb.has(sm.id)){await runDelete(sm.id);changed=true}   // auf einem anderen Gerät gelöscht
-      for(const sm of local)if(!remote.has(sm.id)&&!tomb.has(sm.id)){const rec=await runGet(sm.id,true);if(rec)await this.pushRun(sm,rec)}
-    }catch(e){}
-    this.syncing=false;return changed;
+      for(const sm of local)if(!remote.has(sm.id)&&!tomb.has(sm.id)){const rec=await runGet(sm.id,true);if(rec&&!await this.pushRun(sm,rec))throw new Error('push')}
+    }finally{this.syncing=false;this.emit()}
+    return changed;
   },
-  async auth(kind,name,pw){
-    name=(name||'').trim().toLowerCase();
-    if(!/^[a-z0-9._-]{3,30}$/.test(name))throw {msg:'Benutzername: 3–30 Zeichen (Buchstaben, Ziffern, . _ -)'};
-    if((pw||'').length<6)throw {msg:'Passwort: mindestens 6 Zeichen'};
-    try{
-      await this.load();
-      const {au,auth}=this.sdk,email=name+'@wattlink.app';
-      LS('wattlink-acct',name);
-      if(kind==='up')await au.createUserWithEmailAndPassword(auth,email,pw);else await au.signInWithEmailAndPassword(auth,email,pw);
-    }catch(e){
-      if(!this.user)LS('wattlink-acct',null);
-      const c=e&&e.code||'';
-      throw {msg:{'auth/invalid-credential':'Benutzername oder Passwort falsch','auth/user-not-found':'Benutzername oder Passwort falsch','auth/wrong-password':'Benutzername oder Passwort falsch',
-        'auth/email-already-in-use':'Benutzername schon vergeben','auth/weak-password':'Passwort zu schwach (mindestens 6 Zeichen)','auth/network-request-failed':'Keine Verbindung',
-        'auth/too-many-requests':'Zu viele Versuche – bitte kurz warten','auth/operation-not-allowed':'E-Mail/Passwort-Anmeldung ist in Firebase nicht aktiviert'}[c]||e.msg||('Fehler: '+(c||e.message||e))};
-    }
-  },
-  async logout(){
-    if(play.running){toast('Erst das Training beenden');return}
-    if(!await confirmDialog({title:'Abmelden?',text:'Die Daten auf diesem Gerät werden entfernt. Im Konto bleiben sie gespeichert und kommen beim nächsten Anmelden zurück.',ok:'Abmelden',danger:true}))return;
-    if(this.dirty&&this.user){await this.flush();
-      if(this.dirty&&!await confirmDialog({title:'Nicht synchronisiert',text:'Einige Änderungen sind noch nicht in der Cloud und gehen beim Abmelden verloren.',ok:'Trotzdem abmelden',danger:true}))return}
-    this.stopListen();clearTimeout(this.timer);this.dirty=false;
-    try{if(this.sdk)await this.sdk.au.signOut(this.sdk.auth)}catch(e){}
-    this.user=null;LS('wattlink-acct',null);LS('wattlink-uid',null);
+  async sync(){try{return await this.syncRuns()}catch(e){this.setSt('err');return false}},
+  /* lokale Daten und Konto-Merkmale entfernen (Abmelden / Konto löschen) */
+  async wipeLocal(){
+    this.stopListen();clearTimeout(this.timer);clearTimeout(this.retryT);this.dirty=false;this.needSetup=false;this.user=null;
+    LSKEYS.forEach(k=>LS(k,null));
     S=seed();persistLocal();
     try{await idbTx(['runs','recs'],'readwrite',tx=>{tx.objectStore('runs').clear();tx.objectStore('recs').clear()})}catch(e){}
-    spStore({});this.pending=null;this.st='';this.emit();toast('Abgemeldet');resetHome();
+    spStore({});this.pending=null;this.st='';this.emit();
+  },
+  async logout(){
+    if(!await confirmDialog({title:'Abmelden?',text:'Die Daten auf diesem Gerät werden entfernt. Im Konto bleiben sie gespeichert und kommen beim nächsten Anmelden zurück.',ok:'Abmelden',danger:true}))return;
+    if(play.running){   // zweite Nachfrage: laufendes Training wird beendet
+      if(!await confirmDialog({title:'Training läuft noch',text:'Beim Abmelden wird das laufende Training beendet. Du kannst die Einheit danach noch speichern.',ok:'Beenden und abmelden',cancel:'Weiter fahren',danger:true}))return;
+      if(play.running){const sm=buildRun('aborted');stopRun();if(sm.moving>=300&&await askSaveRun(sm))await storeRun(sm)}
+    }
+    const close=busyModal('Wird abgemeldet…');
+    try{
+      if(this.user){
+        await Promise.allSettled([...this.jobs]);
+        if(this.dirty)await this.flush();
+        if((this.dirty||this.st==='err')&&!await confirmDialog({title:'Nicht synchronisiert',text:'Einige Änderungen sind noch nicht in der Cloud und gehen beim Abmelden verloren.',ok:'Trotzdem abmelden',danger:true}))return;
+      }
+      try{if(this.sdk)await this.sdk.au.signOut(this.sdk.auth)}catch(e){}
+      await this.wipeLocal();
+    }finally{close()}
+    toast('Abgemeldet');resetHome();
+  },
+  /* Konto samt Cloud-Daten endgültig löschen (verlangt frische Anmeldung) */
+  async deleteAccount(pw){
+    if(!this.user||!this.sdk)throw{msg:'Nicht verbunden'};
+    await this.reauth(pw);
+    const {au,fs,db}=this.sdk,u=this.user,id=u.uid;
+    try{
+      for(const col of ['runs','recs','data']){
+        const sn=await withTO(fs.getDocs(fs.collection(db,'users',id,col)),30000);
+        for(const d of sn.docs)await withTO(fs.deleteDoc(d.ref));
+      }
+      const un=this.prof().username;if(un){try{await withTO(fs.deleteDoc(fs.doc(db,'usernames',un)))}catch(e){}}
+      await au.deleteUser(u);
+    }catch(e){throw e&&e.msg?e:this.authErr(e)}
+    await this.wipeLocal();
   }
 };
-window.addEventListener('online',()=>{if(Cloud.on&&Cloud.name()&&!Cloud.sdk)Cloud.init();else if(Cloud.dirty)Cloud.flush()});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Cloud.user){Cloud.syncRuns().then(c=>{if(c&&cur()==='stats')render()});if(Cloud.dirty)Cloud.flush()}});
+window.addEventListener('online',()=>Cloud.recover());
+window.addEventListener('offline',()=>Cloud.emit());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Cloud.user){Cloud.sync().then(c=>{if(c&&cur()==='stats')render()});if(Cloud.dirty)Cloud.flush()}});
 const W=p=>Math.round(p/100*S.settings.ftp);
 /* Herzfrequenzzonen: 5 Zonen nach Coggan, bezogen auf die Schwellen-HF (LTHR); Z5 = Leistungszonen Z5–Z7 zusammen */
 const HRZ_NAMES=['Aktive Erholung','Ausdauer','Tempo','Schwelle','VO2max und höher'];
@@ -954,6 +1249,44 @@ function categoryDialog(ex){
         h('button',{class:'btn primary',onclick:()=>{const n=name.value.trim();if(!n)return;done({name:n,color:col.value})}},'Speichern'))],()=>done(null));
   });
 }
+
+/* Eingabefeld mit Icon, Passwort-Auge und Hinweis-/Fehlerzeile (Auth-Seite und Dialoge) */
+function authField({label,icon,type='text',ph,ac,eye,prefix,hint}){
+  const inp=h('input',{type,placeholder:ph||'',autocomplete:ac||'off',autocapitalize:'none',autocorrect:'off',spellcheck:'false','aria-label':label});
+  const box=h('div',{class:'afi glass'},ic(icon,20),prefix&&h('span',{class:'afp'},prefix),inp);
+  if(eye){
+    const b=h('button',{type:'button',class:'eye','aria-label':'Passwort anzeigen',html:I('eye',20),onclick:()=>{
+      const show=inp.type==='password';inp.type=show?'text':'password';b.innerHTML=I(show?'eyeoff':'eye',20);b.setAttribute('aria-label',show?'Passwort verbergen':'Passwort anzeigen')}});
+    box.append(b);
+  }
+  const spinEl=h('span',{class:'spin',style:'display:none'});box.append(spinEl);
+  const msg=h('div',{class:'afm'});
+  return{root:h('div',{class:'af'},h('label',{},label),box,msg),inp,hint,touched:false,
+    set(state,text){box.classList.toggle('bad',state==='bad');box.classList.toggle('good',state==='good');msg.className='afm '+(state||'');msg.textContent=text||''},
+    spin(on){spinEl.style.display=on?'':'none'}};
+}
+function inputDialog({title,text,fields,ok='OK',cancel='Abbrechen',danger=false}){
+  return new Promise(res=>{
+    let m;const done=v=>{closeModal(m);res(v)};
+    const fs=fields.map(f=>authField({label:f.label,icon:f.icon||'edit',type:f.type||'text',ph:f.ph,ac:f.ac,eye:f.type==='password'}));
+    fields.forEach((f,i)=>{if(f.value)fs[i].inp.value=f.value});
+    const err=h('div',{class:'auth-err'});
+    const submit=()=>{
+      const vals=fs.map((x,i)=>fields[i].type==='password'?x.inp.value:x.inp.value.trim());
+      for(let i=0;i<fields.length;i++){const e=fields[i].check&&fields[i].check(vals[i]);if(e){err.textContent=e;fs[i].inp.focus();return}}
+      done(vals);
+    };
+    fs.forEach(x=>x.inp.addEventListener('keydown',e=>{if(e.key==='Enter')submit()}));
+    m=openModal([h('h3',{},title),text&&h('p',{},text),...fs.map(x=>x.root),err,
+      h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>done(null)},cancel),h('button',{class:'btn '+(danger?'danger':'primary'),onclick:submit},ok))],()=>done(null));
+    setTimeout(()=>fs[0].inp.focus(),250);
+  });
+}
+function busyModal(text){
+  const m=openModal([h('div',{style:'display:flex;align-items:center;gap:14px;padding:6px 0'},h('span',{class:'spin',style:'width:22px;height:22px'}),h('span',{style:'font-size:15px'},text))],()=>{});
+  return()=>closeModal(m);
+}
+async function withBusy(btn,fn){btn.classList.add('busy');try{return await fn()}finally{btn.classList.remove('busy')}}
 
 /* Popup-Menü (3-Punkte-Buttons): Einträge mit Symbol vor dem Text */
 let popEl=null;
@@ -1186,7 +1519,7 @@ function favWidget(){
 }
 function renderHome(){
   $('#home-greet').textContent=greeting();
-  const nm=Cloud.name(),u=$('#home-user');u.textContent=nm||'';u.style.display=nm?'':'none';
+  updIdentity();
   $('#home-body').replaceChildren(ftpWidget(),favWidget());
 }
 
@@ -1768,13 +2101,268 @@ $('#ovr-yes').addEventListener('click',()=>{
 $('#dbg-m').addEventListener('click',()=>Device.simAdjust(-10));
 $('#dbg-p').addEventListener('click',()=>Device.simAdjust(10));
 
+/* ───────── Anmelden / Registrieren (Fullscreen) ───────── */
+V.auth={enter(p){buildAuth(p&&p.mode||'in')},redraw(){}};
+const RX_USER=/^[a-z0-9._-]{3,30}$/,RX_MAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const GLOGO='<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46a5.52 5.52 0 0 1-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.88-3c-1.08.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.28v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.29 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.28a12 12 0 0 0 0 10.8l4.01-3.1z"/><path fill="#EA4335" d="M12 4.75c1.76 0 3.34.6 4.58 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.28 6.6l4.01 3.1C6.23 6.86 8.88 4.75 12 4.75z"/></svg>';
+let authMode='in';
+/* zurück auf die Startseite (Tab-Stapel leeren); Promise endet, wenn die Navigation durch ist */
+function goHomeTab(){
+  route[0]={view:'home',params:{}};
+  const n=route.length-1;route.length=1;render();
+  return new Promise(res=>{
+    if(n<=0){res();return}
+    const f=()=>{removeEventListener('popstate',f);setTimeout(res,0)};
+    addEventListener('popstate',f);history.go(-n);setTimeout(res,700);
+  });
+}
+async function afterAuth(){
+  if(Cloud.needSetup){replaceTop('auth',{mode:'setup'});return}
+  await goHomeTab();Cloud.start();
+}
+$('#auth-back').addEventListener('click',async()=>{
+  if(authMode==='setup'){
+    if(!await confirmDialog({title:'Einrichtung abbrechen?',text:'Du wirst abgemeldet und kannst dich später erneut anmelden.',ok:'Abmelden',cancel:'Weiter einrichten',danger:true}))return;
+    await Cloud.cancelSetup();
+  }
+  history.back();
+});
+function buildAuth(mode){
+  const host=$('#auth-body');host.replaceChildren();host.scrollTop=0;authMode=mode;
+  const T={in:['Willkommen zurück','Melde dich an, damit deine Programme, Einstellungen und das Logbuch auf allen Geräten da sind.'],
+    up:['Konto erstellen','Deine Daten werden automatisch gesichert und sind auf jedem Gerät verfügbar.'],
+    reset:['Passwort zurücksetzen','Gib deine E-Mail-Adresse ein. Wir schicken dir einen Link zum Zurücksetzen.'],
+    setup:['Profil vervollständigen','Wähle deinen Namen und einen Benutzernamen, damit dein Konto fertig eingerichtet ist.']}[mode];
+  host.append(h('div',{class:'auth-h'},T[0]),h('div',{class:'auth-s'},T[1]));
+  const F={},fields=[];let busy=false,busyBtn=null,uFree={v:'',s:null},uTimer=0,uSeq=0;
+  const add=(key,cfg,check)=>{
+    const f=authField(cfg);f.check=check;F[key]=f;fields.push(f);host.append(f.root);
+    f.inp.addEventListener('input',()=>{f.touched=true;if(f.onInput)f.onInput();refresh()});
+    f.inp.addEventListener('blur',()=>{if(f.inp.value){f.touched=true;refresh()}});
+    f.inp.addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+    return f;
+  };
+  const okR={ok:true,type:'good',msg:''};
+  const need=(v,msg)=>v?okR:{ok:false,type:'bad',msg};
+  const cName=v=>v.trim().length>=2?okR:{ok:false,type:'bad',msg:'Bitte gib deinen Namen ein'};
+  const cMail=v=>RX_MAIL.test(v.trim())?okR:{ok:false,type:'bad',msg:'Ungültige E-Mail-Adresse'};
+  const cPw8=v=>v.length>=8?okR:{ok:false,type:'bad',msg:`Mindestens 8 Zeichen (noch ${8-v.length})`};
+  const cUser=v=>{
+    if(!v)return{ok:false,type:'bad',msg:'Bitte wähle einen Benutzernamen'};
+    if(/[^a-z0-9._-]/.test(v))return{ok:false,type:'bad',msg:'Erlaubt sind Kleinbuchstaben, Ziffern, . _ -'};
+    if(v.length<3)return{ok:false,type:'bad',msg:'Mindestens 3 Zeichen'};
+    if(v.length>30)return{ok:false,type:'bad',msg:'Höchstens 30 Zeichen'};
+    if(uFree.v!==v||uFree.s==='chk')return{ok:false,type:'hint',msg:'Prüfe Verfügbarkeit…'};
+    if(uFree.s===false)return{ok:false,type:'bad',msg:'Benutzername bereits vergeben'};
+    if(uFree.s===true)return{ok:true,type:'good',msg:'Benutzername verfügbar'};
+    return okR;   // nicht prüfbar (offline/Regeln): serverseitig geprüft
+  };
+  const addUser=()=>{
+    const f=add('username',{label:'Benutzername',icon:'at',ph:'z. B. jonas',ac:'username',prefix:'@'},cUser);
+    f.onInput=()=>{
+      const l=f.inp.value.toLowerCase();if(l!==f.inp.value)f.inp.value=l;
+      const v=f.inp.value;clearTimeout(uTimer);++uSeq;
+      if(!RX_USER.test(v)){uFree={v,s:null};f.spin(false);return}
+      uFree={v,s:'chk'};f.spin(true);const q=uSeq;
+      uTimer=setTimeout(async()=>{const r=await Cloud.usernameFree(v);if(q!==uSeq)return;uFree={v,s:r};f.spin(false);refresh()},450);
+    };
+    return f;
+  };
+  const err=h('div',{class:'auth-err'});
+  const label={in:'Anmelden',up:'Konto erstellen',reset:'Link senden',setup:'Fertig'}[mode];
+  const submit=h('button',{type:'button',class:'btn primary wfull',onclick:()=>run()},label);
+  let gbtn=null;
+  const refresh=()=>{
+    let all=true;
+    fields.forEach(f=>{
+      const r=f.check(f.inp.value);if(!r.ok)all=false;
+      if(f.touched)f.set(r.type,r.msg);else f.set(f.hint?'hint':'',f.hint||'');
+    });
+    submit.disabled=busy||!all;if(gbtn)gbtn.disabled=busy;
+  };
+  const setBusy=(b,btn=submit)=>{busy=b;busyBtn=b?btn:null;btn.classList.toggle('busy',b);refresh()};
+  const val=k=>F[k].inp.value;
+  const run=async()=>{
+    if(busy||submit.disabled)return;
+    err.textContent='';setBusy(true);
+    try{
+      if(mode==='in'){await Cloud.login(val('id'),val('pw'));await afterAuth()}
+      else if(mode==='up'){await Cloud.register({name:val('name').trim(),username:val('username'),email:val('email').trim(),pw:val('pw')});toast('Konto erstellt – Bestätigungs-Mail gesendet');await afterAuth()}
+      else if(mode==='setup'){await Cloud.finishSetup({name:val('name').trim(),username:val('username')});toast('Profil gespeichert');await afterAuth()}
+      else{await Cloud.reset(val('email').trim());showResetDone()}
+    }catch(e){
+      if(e&&!e.silent)err.textContent=e.msg||'Fehler';
+      if(e&&/vergeben/.test(e.msg||'')&&F.username){uFree={v:val('username'),s:false};F.username.touched=true}
+    }
+    setBusy(false);
+  };
+  const showResetDone=()=>{
+    host.replaceChildren(h('div',{class:'auth-h'},'E-Mail unterwegs'),
+      h('div',{class:'glass auth-ok'},'Falls zu dieser Adresse ein Konto existiert, haben wir dir einen Link zum Zurücksetzen des Passworts geschickt. Schau auch im Spam-Ordner nach.'),
+      h('button',{type:'button',class:'btn primary wfull',onclick:()=>history.back()},'Zurück zur Anmeldung'));
+  };
+  const googleBtn=()=>{
+    gbtn=h('button',{type:'button',class:'btn wfull gbtn',onclick:async()=>{
+      if(busy)return;err.textContent='';setBusy(true,gbtn);
+      try{await Cloud.google();await afterAuth()}catch(e){if(e&&!e.silent)err.textContent=e.msg||'Fehler'}
+      setBusy(false);
+    }},h('span',{html:GLOGO,style:'display:flex'}),'Mit Google anmelden');
+    return gbtn;
+  };
+  if(mode==='in'){
+    add('id',{label:'E-Mail oder Benutzername',icon:'mail',ph:'name@beispiel.de',ac:'username',hint:'Alte Konten: einfach den bisherigen Benutzernamen eingeben'},v=>need(v.trim(),''));
+    add('pw',{label:'Passwort',icon:'lock',type:'password',ph:'Passwort',ac:'current-password',eye:true},v=>need(v,''));
+    host.append(h('div',{style:'text-align:right;margin:-6px 0 14px'},h('button',{type:'button',class:'alink',onclick:()=>go('auth',{mode:'reset'})},'Passwort vergessen?')));
+    host.append(err,submit,h('div',{class:'divider'},'oder'),googleBtn(),
+      h('div',{class:'auth-sw'},'Noch kein Konto? ',h('button',{type:'button',class:'alink',onclick:()=>replaceTop('auth',{mode:'up'})},'Registrieren')));
+  }else if(mode==='up'){
+    add('name',{label:'Name',icon:'user',ph:'Vor- und Nachname',ac:'name'},cName);
+    addUser();
+    add('email',{label:'E-Mail',icon:'mail',type:'email',ph:'name@beispiel.de',ac:'email'},cMail);
+    add('pw',{label:'Passwort',icon:'lock',type:'password',ph:'Mindestens 8 Zeichen',ac:'new-password',eye:true,hint:'Mindestens 8 Zeichen'},cPw8);
+    host.append(err,submit,h('div',{class:'divider'},'oder'),googleBtn(),
+      h('div',{class:'auth-sw'},'Schon ein Konto? ',h('button',{type:'button',class:'alink',onclick:()=>replaceTop('auth',{mode:'in'})},'Anmelden')));
+  }else if(mode==='reset'){
+    add('email',{label:'E-Mail',icon:'mail',type:'email',ph:'name@beispiel.de',ac:'email'},cMail);
+    host.append(err,submit,h('div',{class:'hint',style:'margin-top:16px'},'Alte Konten ohne E-Mail-Adresse können ihr Passwort nicht zurücksetzen.'));
+  }else{
+    const nm=add('name',{label:'Name',icon:'user',ph:'Vor- und Nachname',ac:'name'},cName);nm.inp.value=Cloud.prof().name||'';
+    addUser();
+    host.append(err,submit);
+  }
+  refresh();
+}
+
 /* ───────── Einstellungen ───────── */
 V.profile={enter(){buildSettings()}};
-/* Profil-Kopf: Platz für Profilbild, später Follower und Co. */
+/* Skeleton-Baustein (grauer, schimmernder Platzhalter im Layout des echten Elements) */
+const skel=(w,hh,r=8)=>h('span',{class:'skel',style:`display:block;width:${typeof w==='number'?w+'px':w};height:${hh}px;border-radius:${r}px`});
+/* Profilbild: Foto oder Symbol (Home-Button und Profil) */
+function paintAvatar(el,size){
+  if(!el)return;
+  const ph=Cloud.photo();
+  if(ph){el.style.backgroundImage=`url("${ph}")`;if(el.firstChild)el.innerHTML=''}
+  else{el.style.backgroundImage='';if(!el.firstChild)el.innerHTML=I('user',size)}
+}
+/* Wolken-Indikator: grüner Haken = synchron, kreisende Pfeile = läuft, rotes ! = offline/Fehler */
+function updSync(){
+  const st=Cloud.ind();
+  $$('.syncind').forEach(b=>{
+    b.classList.toggle('show',st!=='off');
+    if(b.dataset.s!==st){
+      b.dataset.s=st;b.classList.remove('si-ok','si-sync','si-err');b.classList.add('si-'+st);
+      b.innerHTML=st==='off'?'':I(st==='ok'?'cloudok':st==='err'?'clouderr':'syncarr',20);
+    }
+    b.title=Cloud.text();
+  });
+}
+function updIdentity(){
+  paintAvatar($('#home-avatar'),24);paintAvatar($('#prof-av'),38);updSync();
+  const g=$('#home-user');
+  if(g){const P=Cloud.prof(),nm=P.name?P.name.trim().split(/\s+/)[0]:(Cloud.name()?'@'+Cloud.name():'');g.textContent=nm;g.style.display=nm?'':'none'}
+}
+const syncBtn=()=>h('button',{type:'button',class:'syncind glass','aria-label':'Synchronisierung',onclick:()=>toast(Cloud.text())});
+async function squareImage(file,size){
+  const bmp=await createImageBitmap(file);
+  const c=document.createElement('canvas');c.width=c.height=size;
+  const m=Math.min(bmp.width,bmp.height);
+  c.getContext('2d').drawImage(bmp,(bmp.width-m)/2,(bmp.height-m)/2,m,m,0,0,size,size);
+  try{bmp.close()}catch(e){}
+  return c.toDataURL('image/jpeg',.85);
+}
+$('#avfile').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const av=$('#prof-av');av&&av.classList.add('loading');
+  try{await Cloud.setPhoto(await squareImage(f,256));toast('Profilbild aktualisiert')}
+  catch(err){toast('Bild konnte nicht gespeichert werden')}
+  finally{const a2=$('#prof-av');a2&&a2.classList.remove('loading')}
+});
+/* Wochen-Streak: aufeinanderfolgende Kalenderwochen (Mo–So) mit mindestens einer Einheit; die laufende Woche darf noch offen sein */
+function weekIdx(ms){const d=new Date(ms),u=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5;return Math.floor((u-((d.getDay()+6)%7)+3)/7)}
+function streakOf(list){
+  const set=new Set(list.map(r=>weekIdx(r.start))),cw=weekIdx(Date.now());
+  let n=0,w=set.has(cw)?cw:cw-1;while(set.has(w)){n++;w--}
+  return{n,thisWeek:set.has(cw),weeks:Array.from({length:8},(_,i)=>set.has(cw-7+i))};
+}
+const flameSvg=on=>`<svg width="30" height="30" viewBox="0 0 24 24" fill="${on?'url(#flg)':'none'}" stroke="${on?'none':'currentColor'}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><defs><linearGradient id="flg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d5e"/></linearGradient></defs><path d="M12 2.5s1.2 3.4-.9 5.9C9.2 10.6 6.5 12 6.5 15.6a5.5 5.5 0 0 0 11 0c0-2.4-1.3-3.9-2.4-5.2-.4 1.3-1 2-2.1 2.6.5-3.4-.1-7.2-1-10.5z"/></svg>`;
+async function editProfileName(){
+  const r=await inputDialog({title:'Profil bearbeiten',fields:[{label:'Name',icon:'user',value:Cloud.prof().name||'',ph:'Vor- und Nachname',ac:'name',check:v=>v.length<2?'Bitte gib deinen Namen ein':''}],ok:'Speichern'});
+  if(!r)return;
+  const close=busyModal('Wird gespeichert…');
+  try{await Cloud.updateName(r[0]);toast('Gespeichert')}catch(e){toast(e.msg||'Speichern fehlgeschlagen')}finally{close()}
+  if(cur()==='profile')buildSettings();
+}
+async function addEmailFlow(){
+  const r=await inputDialog({title:'E-Mail-Adresse hinzufügen',text:'Wir schicken einen Bestätigungslink an die neue Adresse. Danach meldest du dich mit der E-Mail-Adresse an.',
+    fields:[{label:'E-Mail',icon:'mail',type:'email',ph:'name@beispiel.de',check:v=>RX_MAIL.test(v)?'':'Ungültige E-Mail-Adresse'},
+      {label:'Aktuelles Passwort',icon:'lock',type:'password',ac:'current-password',check:v=>v?'':'Bitte Passwort eingeben'}],ok:'Link senden'});
+  if(!r)return;
+  const close=busyModal('Wird gesendet…');
+  try{await Cloud.addEmail(r[0],r[1]);toast('Bestätigungs-Mail gesendet')}catch(e){toast(e.msg||'Fehler')}finally{close()}
+}
+async function deleteAccountFlow(){
+  if(play.running){toast('Erst das Training beenden');return}
+  if(!await confirmDialog({title:'Konto löschen?',text:'Dein Konto und alle Daten im Konto (Programme, Einstellungen, Logbuch, Profil) werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.',ok:'Weiter',danger:true}))return;
+  let pw='';
+  if(Cloud.hasPassword()){
+    const r=await inputDialog({title:'Passwort bestätigen',text:'Zur Sicherheit brauchen wir dein Passwort.',fields:[{label:'Passwort',icon:'lock',type:'password',ac:'current-password',check:v=>v?'':'Bitte Passwort eingeben'}],ok:'Konto löschen',danger:true});
+    if(!r)return;pw=r[0];
+  }
+  const close=busyModal('Konto wird gelöscht…');
+  try{await Cloud.deleteAccount(pw);close();toast('Konto gelöscht');resetHome()}
+  catch(e){close();toast(e.msg||'Löschen fehlgeschlagen')}
+}
+/* Profil-Kopf: Foto mit Stift-Button, Name, @Benutzername; darunter Statistik-Kacheln */
 function profileHead(){
-  const nm=Cloud.name();
-  return h('div',{class:'glass pad profh',id:'prof-head'},h('div',{class:'avatar glass'},ic('user',30)),
-    h('div',{},h('div',{class:'hg1'},nm||'Gast'),h('div',{class:'hg2'},nm?'WattLink-Konto':'Nicht angemeldet')));
+  const P=Cloud.prof(),logged=!!Cloud.name();
+  const av=h('div',{class:'avatar glass',id:'prof-av'});paintAvatar(av,38);
+  const pen=h('button',{type:'button',class:'pen glass',html:I('edit',16),'aria-label':'Profilbild ändern',onclick:()=>$('#avfile').click()});
+  const card=h('div',{class:'glass pcard'},syncBtn(),h('div',{class:'pav'},av,pen));
+  if(logged){
+    card.append(h('div',{class:'pname'},P.name||('@'+Cloud.name())),
+      P.name?h('div',{class:'puser'},'@'+Cloud.name()):h('button',{type:'button',class:'alink',onclick:editProfileName},'Name hinzufügen'));
+  }else if(Cloud.needSetup&&Cloud.user){
+    card.append(h('div',{class:'pname'},P.name||'Fast geschafft'),h('div',{class:'puser'},'Profil noch nicht fertig eingerichtet'),
+      h('div',{class:'addrow'},h('button',{class:'btn primary',onclick:()=>go('auth',{mode:'setup'})},'Profil vervollständigen')));
+  }else{
+    card.append(h('div',{class:'pname'},'Gast'),h('div',{class:'puser'},'Nicht angemeldet'),
+      Cloud.on&&h('div',{class:'addrow'},h('button',{class:'btn primary',onclick:()=>go('auth',{mode:'in'})},'Anmelden'),h('button',{class:'btn',onclick:()=>go('auth',{mode:'up'})},'Registrieren')));
+  }
+  updSync();
+  return[card,profileTiles()];
+}
+function profileTiles(){
+  const vAct=h('div',{class:'sv'},skel(48,26)),vSince=h('div',{class:'sv sm'},skel(110,26));
+  const flame=h('div',{class:'flame',html:flameSvg(false)}),sN=h('div',{class:'sv'},skel(80,30)),sT=h('div',{class:'sk2'},skel(170,12)),
+    dots=h('div',{class:'wdots'},...Array.from({length:8},()=>h('i')));
+  const root=h('div',{class:'stiles'},
+    h('div',{class:'glass stile wide'},h('div',{class:'streak'},flame,h('div',{style:'min-width:0;flex:1'},h('div',{class:'sl'},'Wöchentliche Streak'),sN,sT)),dots),
+    h('div',{class:'glass stile'},h('div',{class:'sl'},ic('bolt',16),'Aktivitäten'),vAct),
+    h('div',{class:'glass stile'},h('div',{class:'sl'},ic('calendar',16),'Registriert seit'),vSince));
+  const t0=Date.now();
+  const fillSince=()=>{
+    const P=Cloud.prof();
+    if(P.since)vSince.textContent=new Date(P.since).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    else if(Cloud.name()&&Date.now()-t0<8000)vSince.replaceChildren(skel(110,26));
+    else vSince.textContent='–';
+  };
+  const fill=async()=>{
+    const list=await runList();if(!root.isConnected)return;
+    const st=streakOf(list);
+    vAct.textContent=String(list.length);
+    sN.replaceChildren(String(st.n),h('i',{},st.n===1?'Woche':'Wochen'));
+    sT.textContent=st.n>0&&st.thisWeek?'Diese Woche schon trainiert':st.n>0?'Diese Woche noch offen – halte deine Serie am Leben':'Trainiere diese Woche, um deine Serie zu starten';
+    flame.className='flame'+(st.n>0?' on':'');flame.innerHTML=flameSvg(st.n>0);
+    dots.replaceChildren(...st.weeks.map((on,i)=>h('i',{class:(on?'on':'')+(i===7?' cur':'')})),h('span',{},'letzte 8 Wochen'));
+  };
+  let last=Cloud.ind();
+  const onEmit=()=>{
+    if(!root.isConnected){Cloud.listeners.delete(onEmit);return}
+    fillSince();const st=Cloud.ind();if(st!==last){last=st;if(st==='ok')fill()}
+  };
+  Cloud.listeners.add(onEmit);fillSince();fill();
+  setTimeout(()=>{if(root.isConnected)fillSince()},8200);
+  return root;
 }
 function buildSettings(){
   const body=$('#set-body');body.innerHTML='';
@@ -1809,42 +2397,38 @@ function buildSettings(){
     d.open=LS(k)==='1';d.addEventListener('toggle',()=>LS(k,d.open?'1':'0'));return d};
   /* Konto */
   const acctBox=h('div');
-  let amode=null,ast=null,busy=false,err='';
+  let amode=null,ast=null,aic=null;
+  const keyOf=()=>!Cloud.on?'off':Cloud.name()?('in'+(Cloud.user&&Cloud.user.emailVerified?'v':'')+(Cloud.prof().email?'e':'')):'out';
   const buildAcct=()=>{
-    acctBox.replaceChildren();ast=null;
-    if(!Cloud.on){acctBox.append(h('div',{class:'hint',style:'margin-top:0'},'Die Cloud ist noch nicht eingerichtet. Trage die Firebase-Daten in der Konstante CLOUD am Anfang des Skripts ein (Anleitung siehe Chat).'));return}
-    if(Cloud.name()){
-      ast=h('span',{},Cloud.text());
-      acctBox.append(h('div',{class:'srow'},h('span',{class:'sd '+(Cloud.user&&Cloud.st===''?'on':'busy')}),h('b',{},'Angemeldet als '+Cloud.name()),ast),
-        h('div',{class:'hint'},'Programme, Einstellungen und Logbuch werden automatisch mit deinem Konto synchronisiert. Du bleibst angemeldet, auch wenn die App geschlossen wird.'),
-        h('div',{class:'addrow'},
-          h('button',{class:'btn',onclick:async()=>{if(!Cloud.user){toast('Nicht verbunden');return}await Cloud.start();toast('Synchronisiert')}},'Jetzt synchronisieren'),
-          h('button',{class:'btn danger',onclick:()=>Cloud.logout()},'Abmelden')));
+    acctBox.replaceChildren();ast=null;aic=null;
+    if(!Cloud.on){acctBox.append(h('div',{class:'hint',style:'margin-top:0'},'Die Cloud ist noch nicht eingerichtet. Trage die Firebase-Daten in der Konstante CLOUD am Anfang des Skripts ein.'));return}
+    if(!Cloud.name()){
+      acctBox.append(h('div',{class:'hint',style:'margin-top:0'},'Mit einem Konto sind deine Programme, Einstellungen und das Logbuch automatisch auf allen Geräten verfügbar.'),
+        h('div',{class:'addrow'},h('button',{class:'btn primary',onclick:()=>go('auth',{mode:'in'})},'Anmelden'),h('button',{class:'btn',onclick:()=>go('auth',{mode:'up'})},'Registrieren')));
       return;
     }
-    const u=h('input',{class:'fi',style:'width:100%;text-align:left;padding:0 12px',placeholder:'Benutzername',autocapitalize:'off',autocomplete:'username',spellcheck:'false'});
-    const p=h('input',{class:'fi',type:'password',style:'width:100%;text-align:left;padding:0 12px',placeholder:'Passwort (min. 6 Zeichen)',autocomplete:'current-password'});
-    const e=h('div',{class:'hint acct-err'},err);
-    const go2=async kind=>{
-      if(busy)return;busy=true;err='';e.textContent='';bs.forEach(b=>b.disabled=true);
-      try{await Cloud.auth(kind,u.value,p.value);toast(kind==='up'?'Konto erstellt':'Angemeldet')}
-      catch(x){err=x.msg||'Fehler';e.textContent=err}
-      busy=false;bs.forEach(b=>b.disabled=false);
-    };
-    const b1=h('button',{class:'btn primary',onclick:()=>go2('in')},'Anmelden'),b2=h('button',{class:'btn',onclick:()=>go2('up')},'Registrieren'),bs=[b1,b2];
-    p.addEventListener('keydown',ev=>{if(ev.key==='Enter')go2('in')});
-    acctBox.append(h('div',{class:'hint',style:'margin-top:0'},'Mit einem Konto sind deine Programme, Einstellungen und das Logbuch auf allen Geräten verfügbar. Es gibt keine Passwort-Wiederherstellung – bitte Passwort merken.'),
-      h('div',{class:'field'},h('div',{class:'fl'},'Benutzername'),u),h('div',{class:'field'},h('div',{class:'fl'},'Passwort'),p),e,
-      h('div',{class:'addrow'},b1,b2));
+    const P=Cloud.prof(),u=Cloud.user,hasMail=!!P.email;
+    ast=h('span',{},Cloud.text());aic=h('span',{class:'siico'});
+    acctBox.append(h('div',{class:'srow'},aic,h('b',{},'Cloud'),ast),
+      h('div',{class:'srow'},h('span',{class:'sd '+(hasMail?'on':'')}),h('b',{},'E-Mail'),h('span',{},hasMail?P.email:'keine (alter Benutzername-Login)')));
+    if(u&&hasMail&&!u.emailVerified){
+      const b1=h('button',{type:'button',class:'btn',onclick:()=>withBusy(b1,async()=>{try{await Cloud.resendVerify();toast('Bestätigungs-Mail gesendet')}catch(e){toast(e.msg||'Fehler')}})},'Mail erneut senden');
+      const b2=h('button',{type:'button',class:'btn',onclick:()=>withBusy(b2,async()=>{try{const v=await Cloud.reloadUser();toast(v?'E-Mail bestätigt':'Noch nicht bestätigt');updAcct()}catch(e){toast(e.msg||'Fehler')}})},'Ich habe bestätigt');
+      acctBox.append(h('div',{class:'hint'},'Deine E-Mail-Adresse ist noch nicht bestätigt. Wir haben dir einen Link geschickt.'),h('div',{class:'addrow'},b1,b2));
+    }
+    acctBox.append(h('div',{class:'hint'},'Programme, Einstellungen und Logbuch werden automatisch synchronisiert. Du bleibst angemeldet, auch wenn die App geschlossen wird.'),
+      h('div',{class:'addrow'},h('button',{type:'button',class:'btn',onclick:editProfileName},'Profil bearbeiten'),h('button',{type:'button',class:'btn danger',onclick:()=>Cloud.logout()},'Abmelden')));
+    if(!hasMail)acctBox.append(h('div',{class:'addrow'},h('button',{type:'button',class:'btn',onclick:addEmailFlow},'E-Mail-Adresse hinzufügen')));
+    acctBox.append(h('button',{type:'button',class:'danglink',onclick:deleteAccountFlow},'Konto endgültig löschen…'));
   };
+  const paintSt=()=>{if(!ast)return;ast.textContent=Cloud.text();const st=Cloud.ind();aic.className='siico si-'+st;aic.innerHTML=I(st==='ok'?'cloudok':st==='err'?'clouderr':'syncarr',18)};
   const updAcct=()=>{
     if(!acctBox.isConnected){Cloud.listeners.delete(updAcct);return}
-    const m=!Cloud.on?'off':Cloud.name()?'in':'out';
-    if(m!==amode){amode=m;buildAcct()}
-    else if(ast){ast.textContent=Cloud.text();const d=acctBox.querySelector('.sd');if(d)d.className='sd '+(Cloud.user&&Cloud.st===''?'on':'busy')}
+    const k=keyOf();if(k!==amode){amode=k;buildAcct()}
+    paintSt();
   };
-  amode=!Cloud.on?'off':Cloud.name()?'in':'out';buildAcct();Cloud.listeners.add(updAcct);
-  body.append(profileHead(),det('Konto',acctBox,'konto'),
+  amode=keyOf();buildAcct();paintSt();Cloud.listeners.add(updAcct);
+  body.append(...profileHead(),det('Konto',acctBox,'konto'),
     det('Leistung',[
       field('FTP',{get:()=>S.settings.ftp,set:v=>{S.settings.ftp=Math.round(v);save()},step:5,min:50,max:600,unit:'W',cb:drawZones}),
       field('Maximale Herzfrequenz',{get:()=>S.settings.maxHr,set:v=>{S.settings.maxHr=Math.round(v);save()},step:1,min:100,max:230,unit:'bpm',cb:()=>{drawLthr();drawHr()}}),
@@ -2025,7 +2609,7 @@ $('#mus-pv').addEventListener('click',()=>Music.ctl('pv'));
 
 /* ───────── Logbuch ───────── */
 /* Statistics: bisher nur Logbuch (FTP-Statistik folgt), mit Suche nach Datum/Name und Kategoriefilter */
-const stt={q:'',cat:null,built:false,list:[]};
+const stt={q:'',cat:null,built:false,list:[],loaded:false};
 V.stats={enter(){buildStatsHead();renderLog()},redraw(){drawLogList()}};
 function buildStatsHead(){
   const host=$('#st-head');
@@ -2039,12 +2623,19 @@ function runDateKeys(d){
     `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`].join(' ').toLowerCase();
 }
 const WD=['So','Mo','Di','Mi','Do','Fr','Sa'],p2=n=>String(n).padStart(2,'0');
+async function loadLog(){stt.list=(await runList()).sort((a,b)=>b.start-a.start);stt.loaded=true;drawLogList()}
 async function renderLog(){
-  stt.list=(await runList()).sort((a,b)=>b.start-a.start);drawLogList();
-  if(Cloud.user&&!renderLog.syncing){renderLog.syncing=true;Cloud.syncRuns().then(async c=>{renderLog.syncing=false;if(c&&cur()==='stats'){stt.list=(await runList()).sort((a,b)=>b.start-a.start);drawLogList()}})}   // Einheiten anderer Geräte nachladen
+  await loadLog();
+  if(Cloud.user&&!renderLog.syncing){renderLog.syncing=true;Cloud.sync().then(async c=>{renderLog.syncing=false;if(cur()==='stats'){if(c)await loadLog();else drawLogList()}})}   // Einheiten anderer Geräte nachladen
 }
+/* Skeleton-Karten im Layout der Logbuch-Einträge, solange geladen/synchronisiert wird */
+const logSkel=n=>Array.from({length:n},()=>h('div',{class:'card glass'},h('div',{class:'bar',style:'background:rgba(108,101,146,.15)'}),
+  h('div',{class:'ct'},skel(150,17),h('div',{style:'height:10px'}),skel(210,12),h('div',{style:'height:7px'}),skel(130,12))));
+let _lastInd=null;
+Cloud.listeners.add(()=>{const st=Cloud.ind(),was=_lastInd;_lastInd=st;if(cur()==='stats'&&was==='sync'&&st!=='sync')loadLog()});
 function drawLogList(){
   const host=$('#st-list');if(!host)return;
+  if(!stt.loaded||(!stt.list.length&&Cloud.ind()==='sync')){host.replaceChildren(h('div',{class:'sec'},skel(120,14)),...logSkel(4));return}
   const q=stt.q.trim().toLowerCase(),nodes=[];
   const list=stt.list.filter(r=>(!stt.cat||runCatId(r)===stt.cat)&&(!q||r.name.toLowerCase().includes(q)||runDateKeys(new Date(r.start)).includes(q)));
   if(!stt.list.length)nodes.push(h('div',{class:'empty'},h('div',{class:'big'},'Noch keine Einheiten'),'Abgeschlossene Einheiten, die du speicherst,',h('br'),'erscheinen hier.'));
@@ -2103,7 +2694,8 @@ async function openRun(id){
   const d=new Date(sm.start);
   $('#logd-title').textContent=sm.name;
   $('#logd-sub').textContent=`${WD[d.getDay()]} ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())}${sm.status==='aborted'?' · abgebrochen':''}`;
-  host.append(h('div',{class:'hint'},'Lade…'));
+  host.append(h('div',{class:'glass pad'},h('div',{class:'kpis'},...Array.from({length:6},()=>h('div',{class:'kpi'},skel(70,12),h('div',{style:'height:8px'}),skel(96,24)))),),
+    h('div',{class:'glass pad',style:'margin-top:14px'},skel('100%',210,16)),h('div',{class:'glass pad',style:'margin-top:14px'},skel('100%',90,14)));
   const rec=await runGet(id);
   if(ld.id!==id||cur()!=='logd')return;
   host.replaceChildren();
@@ -2275,7 +2867,8 @@ $('#btn-create').addEventListener('click',()=>go('create',{draft:newProgram(),is
 $('#conn').addEventListener('click',()=>{Device.state==='on'?(Device.disconnect(),toast('Getrennt')):Device.connect()});
 window.addEventListener('resize',()=>{const v=V[cur()];v&&v.redraw&&v.redraw()});
 history.replaceState({d:0},'');
-updConn();render();spHandleRedirect();
+updConn();Cloud.listeners.add(updIdentity);render();spHandleRedirect();
+$('#home-sync').addEventListener('click',()=>toast(Cloud.text()));
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 (()=>{
   let had=false;try{had=!!localStorage.getItem(KEY)}catch(e){}
