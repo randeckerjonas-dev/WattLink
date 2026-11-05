@@ -584,6 +584,15 @@ details[open] summary::after{transform:rotate(225deg)}
     <div class="scroll" id="auth-body"></div>
   </section>
 
+  <section class="page" id="editp">
+    <header class="tb">
+      <button class="iconbtn glass l" data-act="back" data-i="back" aria-label="Zurück"></button>
+      <div class="tbc"><div class="ptitle">Profil bearbeiten</div></div>
+      <div></div>
+    </header>
+    <div class="scroll" id="editp-body"></div>
+  </section>
+
   <nav class="nav glass" id="nav" aria-label="Navigation">
     <i class="ind"></i>
     <button type="button" data-tab="home"><span data-i="home" data-s="24"></span><span>Home</span></button>
@@ -771,7 +780,7 @@ const CLOUD={apiKey:'AIzaSyBTDVFp4WB7cqG8Shh6OfLPPbBwD3Sy414',authDomain:'wattli
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}return null};
 const withTO=(p,ms=15000)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 const CHUNK=600000;
-const LSKEYS=['wattlink-acct','wattlink-uid','wattlink-profile','wattlink-photo','wattlink-photo-dirty','wattlink-setup'];
+const LSKEYS=['wattlink-unmail','wattlink-acct','wattlink-uid','wattlink-profile','wattlink-photo','wattlink-photo-dirty','wattlink-setup'];
 const Cloud={
   on:!!(CLOUD.apiKey&&CLOUD.projectId),sdk:null,user:null,loading:null,listeners:new Set(),
   st:'',lastOk:0,dirty:false,busy:false,timer:null,unsub:null,pending:null,syncing:false,starting:false,
@@ -821,6 +830,7 @@ const Cloud={
     this.user=u||null;this.emit();
     if(this.authBusy)return;
     if(u){
+      try{await withTO(u.reload(),6000)}catch(e){}   // aktuelle E-Mail/Bestätigung vom Server
       await this.loadProfile(u);
       if(this.needSetup){this.emit();if(cur()!=='auth')go('auth',{mode:'setup'});return}
       await this.start();
@@ -838,6 +848,7 @@ const Cloud={
     if(d&&d.username){
       this.setProf({name:d.name||'',username:d.username,email:legacy?'':(u.email||''),since});
       LS('wattlink-setup',null);
+      this.syncUnameMail(d.username,legacy?'':(u.email||''),u.uid);
       if(d.photo)LS('wattlink-photo',d.photo);
       else if(this.photo())this.pushPhoto();
       else if(LS('wattlink-photo-dirty'))this.pushPhoto();
@@ -855,6 +866,12 @@ const Cloud={
     }
     this.needSetup=true;LS('wattlink-setup','1');
     this.setProf({name:u.displayName||'',email:u.email||'',since});
+  },
+  /* E-Mail im öffentlichen Benutzernamen-Eintrag aktuell halten (für „Anmelden mit Benutzername“) */
+  syncUnameMail(un,email,uid){
+    if(!email||!un||LS('wattlink-unmail')===un+'|'+email)return;
+    const {fs,db}=this.sdk;
+    withTO(fs.setDoc(fs.doc(db,'usernames',un),{uid,email})).then(()=>LS('wattlink-unmail',un+'|'+email)).catch(()=>{});
   },
   async usernameFree(un){   // true = frei, false = vergeben, null = nicht prüfbar
     try{
@@ -883,7 +900,7 @@ const Cloud={
     try{
       this.user=cred.user;
       try{await au.updateProfile(cred.user,{displayName:o.name})}catch(e){}
-      try{await withTO(fs.setDoc(fs.doc(db,'usernames',o.username),{uid:cred.user.uid}))}
+      try{await withTO(fs.setDoc(fs.doc(db,'usernames',o.username),{uid:cred.user.uid,email:o.email}))}
       catch(e){if(free!==null){try{await cred.user.delete()}catch(x){}this.user=null;throw{msg:'Benutzername bereits vergeben'}}}
       await withTO(fs.setDoc(this.pref(cred.user),{name:o.name,username:o.username,created:Date.now()}));
       this.setProf({name:o.name,username:o.username,email:o.email,since:Date.parse(cred.user.metadata.creationTime)||Date.now()});
@@ -893,8 +910,13 @@ const Cloud={
   },
   async login(id,pw){
     id=(id||'').trim();
-    const email=id.includes('@')?id:id.toLowerCase()+'@wattlink.app';   // ohne @ = altes Benutzernamen-Konto
-    await this.load();const {au,auth}=this.sdk;this.authBusy=true;
+    await this.load();const {au,auth,fs,db}=this.sdk;
+    let email=id;
+    if(!id.includes('@')){   // Benutzername: E-Mail aus usernames/{name}; sonst altes Konto (name@wattlink.app)
+      const un=id.toLowerCase();email=un+'@wattlink.app';
+      try{const sn=await withTO(fs.getDoc(fs.doc(db,'usernames',un)),8000);if(sn.exists()&&sn.data().email)email=sn.data().email}catch(e){}
+    }
+    this.authBusy=true;
     try{await au.signInWithEmailAndPassword(auth,email,pw)}catch(e){this.authBusy=false;throw this.authErr(e)}
     try{await this.loadProfile(this.user)}catch(e){}
     this.authBusy=false;
@@ -914,7 +936,7 @@ const Cloud={
     const {au,fs,db}=this.sdk,u=this.user;
     const free=await this.usernameFree(o.username);
     if(free===false)throw{msg:'Benutzername bereits vergeben'};
-    try{await withTO(fs.setDoc(fs.doc(db,'usernames',o.username),{uid:u.uid}))}catch(e){if(free!==null)throw{msg:'Benutzername bereits vergeben'}}
+    try{await withTO(fs.setDoc(fs.doc(db,'usernames',o.username),{uid:u.uid,email:u.email||''}))}catch(e){if(free!==null)throw{msg:'Benutzername bereits vergeben'}}
     try{await withTO(fs.setDoc(this.pref(u),{name:o.name,username:o.username,created:Date.now()}))}catch(e){throw this.authErr(e)}
     try{await au.updateProfile(u,{displayName:o.name})}catch(e){}
     this.setProf({name:o.name,username:o.username,email:u.email||'',since:Date.parse(u.metadata.creationTime)||Date.now()});
@@ -927,7 +949,12 @@ const Cloud={
     catch(e){if(e&&e.code==='auth/user-not-found')return;throw this.authErr(e)}   // Existenz des Kontos nicht verraten
   },
   async resendVerify(){try{await this.sdk.au.sendEmailVerification(this.user)}catch(e){throw this.authErr(e)}},
-  async reloadUser(){try{await this.user.reload();this.emit()}catch(e){throw this.authErr(e)}return this.user.emailVerified},
+  async reloadUser(){
+    try{await this.user.reload()}catch(e){throw this.authErr(e)}
+    const u=this.user;
+    if(u.email&&!this.isLegacy(u)&&u.email!==this.prof().email){this.setProf({email:u.email});this.syncUnameMail(this.prof().username,u.email,u.uid)}
+    this.emit();return u.emailVerified;
+  },
   async reauth(pw){
     const {au}=this.sdk,u=this.user;
     try{
@@ -940,9 +967,13 @@ const Cloud={
     this.user=null;this.needSetup=false;['wattlink-setup','wattlink-profile'].forEach(k=>LS(k,null));this.emit();
   },
   hasPassword(){return !!(this.user&&(this.user.providerData||[]).some(x=>x.providerId==='password'))},
-  async addEmail(email,pw){
+  async changeEmail(email,pw){   // schickt einen Bestätigungslink an die neue Adresse; sie gilt erst nach dem Klick
     await this.reauth(pw);
     try{await this.sdk.au.verifyBeforeUpdateEmail(this.user,email)}catch(e){throw this.authErr(e)}
+  },
+  async changePassword(oldPw,newPw){
+    await this.reauth(oldPw);
+    try{await this.sdk.au.updatePassword(this.user,newPw)}catch(e){throw this.authErr(e)}
   },
   async updateName(name){
     const {au,fs}=this.sdk;
@@ -1097,7 +1128,7 @@ const Cloud={
     if(!await confirmDialog({title:'Abmelden?',text:'Die Daten auf diesem Gerät werden entfernt. Im Konto bleiben sie gespeichert und kommen beim nächsten Anmelden zurück.',ok:'Abmelden',danger:true}))return;
     if(play.running){   // zweite Nachfrage: laufendes Training wird beendet
       if(!await confirmDialog({title:'Training läuft noch',text:'Beim Abmelden wird das laufende Training beendet. Du kannst die Einheit danach noch speichern.',ok:'Beenden und abmelden',cancel:'Weiter fahren',danger:true}))return;
-      if(play.running){const sm=buildRun('aborted');stopRun();if(sm.moving>=300&&await askSaveRun(sm))await storeRun(sm)}
+      if(play.running){const sm=buildRun('aborted');stopRun();if(canAsk(sm)&&await askSaveRun(sm))await storeRun(sm)}
     }
     const close=busyModal('Wird abgemeldet…');
     try{
@@ -1129,7 +1160,7 @@ const Cloud={
 };
 window.addEventListener('online',()=>Cloud.recover());
 window.addEventListener('offline',()=>Cloud.emit());
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Cloud.user){Cloud.sync().then(c=>{if(c&&cur()==='stats')render()});if(Cloud.dirty)Cloud.flush()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Cloud.user){if(!Cloud.user.emailVerified)Cloud.reloadUser().catch(()=>{});Cloud.sync().then(c=>{if(c&&cur()==='stats')render()});if(Cloud.dirty)Cloud.flush()}});
 const W=p=>Math.round(p/100*S.settings.ftp);
 /* Herzfrequenzzonen: 5 Zonen nach Coggan, bezogen auf die Schwellen-HF (LTHR); Z5 = Leistungszonen Z5–Z7 zusammen */
 const HRZ_NAMES=['Aktive Erholung','Ausdauer','Tempo','Schwelle','VO2max und höher'];
@@ -2056,6 +2087,8 @@ async function storeRun(sm){
   const ok=await runSave(sm,{id:sm.id,cols:REC_COLS,rows:play.rec,blocks:clone(play.blocks)});
   toast(ok?'Einheit im Logbuch gespeichert':'Speichern fehlgeschlagen');
 }
+/* gespeichert wird ab 5 Min. Fahrzeit gefragt – im Demo-Modus immer */
+const canAsk=sm=>sm.moving>=300||Device.mode==='sim';
 function stopRun(){
   clearInterval(play.timer);clearInterval(play.recT);Music.stop();play.running=false;Device.active=false;releaseWake();hideOverride();
   Device.setPower(IDLE_W);updMini();
@@ -2069,7 +2102,7 @@ async function askExit(){
   if(!ok||!play.running)return;
   const sm=buildRun('aborted');
   stopRun();
-  if(sm.moving>=300&&await askSaveRun(sm))await storeRun(sm);
+  if(canAsk(sm)&&await askSaveRun(sm))await storeRun(sm);
   leavePlay();
 }
 const RPE=[['Sehr leicht','Locker, Unterhaltung problemlos'],['Leicht','Entspannt, lange durchzuhalten'],['Mittel','Fordernd, aber gut machbar'],['Hart','Sehr anstrengend, schwere Atmung'],['Maximal','All out – mehr ging nicht']];
@@ -2102,11 +2135,11 @@ function finishPlay(){
     h('div',{class:'stat'},h('span',{},'Dauer'),h('span',{},fmtTime(play.total))),
     sm.avgW!=null&&h('div',{class:'stat'},h('span',{},'Ø Leistung'),h('span',{},`${sm.avgW} W · ${Math.round(sm.avgW/S.settings.ftp*100)} % FTP`)),
     sm.avgHr!=null&&h('div',{class:'stat'},h('span',{},'Ø Herzfrequenz'),h('span',{},`${sm.avgHr} bpm`)),
-    ...(sm.moving>=300   // erst ab 5 Minuten Fahrzeit wird zum Speichern gefragt
+    ...(canAsk(sm)   // erst ab 5 Minuten Fahrzeit (Demo-Modus: immer) wird zum Speichern gefragt
       ?[rpeInput(sm,()=>cd&&cd.restart()),
         h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>done(false)},'Verwerfen'),okBtn)]
       :[h('div',{class:'btnrow'},h('button',{class:'btn primary',onclick:()=>done(false)},'Fertig'))])],()=>{});
-  if(sm.moving>=300)cd=autoStart(okBtn);
+  if(canAsk(sm))cd=autoStart(okBtn);
 }
 /* Smart Override: Wird die Leistung am Trainer verstellt, kommt 2 s später die Frage, ob alle restlichen Blöcke
    derselben Leistungszone um die gleiche Prozentänderung angepasst werden. „Ja“ startet nach 10 s von selbst. */
@@ -2262,7 +2295,7 @@ function buildAuth(mode){
     return gbtn;
   };
   if(mode==='in'){
-    add('id',{label:'E-Mail oder Benutzername',icon:'mail',ph:'name@beispiel.de',ac:'username',hint:'Alte Konten: einfach den bisherigen Benutzernamen eingeben'},v=>need(v.trim(),''));
+    add('id',{label:'E-Mail oder Benutzername',icon:'mail',ph:'name@beispiel.de',ac:'username',hint:'Mit E-Mail-Adresse oder Benutzername'},v=>need(v.trim(),''));
     add('pw',{label:'Passwort',icon:'lock',type:'password',ph:'Passwort',ac:'current-password',eye:true},v=>need(v,''));
     host.append(h('div',{style:'text-align:right;margin:-6px 0 14px'},h('button',{type:'button',class:'alink',onclick:()=>go('auth',{mode:'reset'})},'Passwort vergessen?')));
     host.append(err,submit,h('div',{class:'divider'},'oder'),googleBtn(),
@@ -2285,8 +2318,61 @@ function buildAuth(mode){
   refresh();
 }
 
+/* ───────── Profil bearbeiten: Name, E-Mail, Passwort ───────── */
+V.editp={enter(){buildEditProfile()},redraw(){}};
+function buildEditProfile(){
+  const host=$('#editp-body');host.replaceChildren();
+  if(!Cloud.name()){host.append(h('div',{class:'empty'},h('div',{class:'big'},'Nicht angemeldet')));return}
+  const P=Cloud.prof(),pwUser=Cloud.hasPassword(),ok0={ok:true,type:'good',msg:''};
+  const card=(title,...kids)=>h('div',{class:'glass pad wg'},h('div',{class:'wgh'},h('span',{},title)),...kids);
+  const wire=(fs,btn)=>{
+    const refresh=()=>{let all=true;fs.forEach(f=>{const r=f.check(f.inp.value);if(!r.ok)all=false;if(f.touched)f.set(r.type,r.msg);else f.set(f.hint?'hint':'',f.hint||'')});btn.disabled=!all};
+    fs.forEach(f=>f.inp.addEventListener('input',()=>{f.touched=true;refresh()}));refresh();return refresh;
+  };
+  const note=h('div',{class:'afm good',style:'margin:10px 4px 0'});
+  /* Name */
+  const nf=authField({label:'Name',icon:'user',ph:'Vor- und Nachname',ac:'name'});nf.inp.value=P.name||'';
+  nf.check=v=>v.trim().length<2?{ok:false,type:'bad',msg:'Bitte gib deinen Namen ein'}:v.trim()===(Cloud.prof().name||'')?{ok:false,type:'',msg:''}:ok0;
+  const nb=h('button',{type:'button',class:'btn primary wfull'},'Name speichern');
+  const nref=wire([nf],nb);
+  nb.onclick=()=>withBusy(nb,async()=>{try{await Cloud.updateName(nf.inp.value.trim());toast('Name gespeichert')}catch(e){toast(e.msg||'Fehler')}nref()});
+  host.append(card('Profil',nf.root,h('div',{class:'srow',style:'margin:0 0 14px'},h('b',{},'Benutzername'),h('span',{},'@'+P.username)),nb));
+  if(!pwUser){
+    host.append(card('E-Mail und Passwort',h('div',{class:'hint',style:'margin:0'},'Du bist mit Google angemeldet. E-Mail-Adresse und Passwort verwaltest du bei Google.')));
+    return;
+  }
+  /* E-Mail */
+  const ef=authField({label:P.email?'Neue E-Mail-Adresse':'E-Mail-Adresse',icon:'mail',type:'email',ph:'name@beispiel.de',ac:'email'});
+  ef.check=v=>!RX_MAIL.test(v.trim())?{ok:false,type:'bad',msg:'Ungültige E-Mail-Adresse'}:v.trim().toLowerCase()===(P.email||'').toLowerCase()?{ok:false,type:'bad',msg:'Das ist bereits deine E-Mail-Adresse'}:ok0;
+  const ep=authField({label:'Aktuelles Passwort',icon:'lock',type:'password',ph:'Passwort',ac:'current-password',eye:true});
+  ep.check=v=>v?ok0:{ok:false,type:'bad',msg:'Bitte Passwort eingeben'};
+  const eb=h('button',{type:'button',class:'btn primary wfull'},'Bestätigungslink senden');
+  const eref=wire([ef,ep],eb);
+  eb.onclick=()=>withBusy(eb,async()=>{
+    note.textContent='';
+    try{await Cloud.changeEmail(ef.inp.value.trim(),ep.inp.value);note.textContent=`Wir haben einen Link an ${ef.inp.value.trim()} geschickt. Die Adresse ändert sich, sobald du ihn öffnest.`;ef.inp.value='';ep.inp.value='';ef.touched=ep.touched=false}
+    catch(e){if(!e.silent){ep.set('bad',e.msg||'Fehler');ep.touched=false}}
+    eref();
+  });
+  host.append(card('E-Mail-Adresse',h('div',{class:'srow',style:'margin:0 0 14px'},h('b',{},'Aktuell'),h('span',{},P.email||'keine (alter Benutzername-Login)')),ef.root,ep.root,eb,note,
+    !P.email&&h('div',{class:'hint'},'Danach meldest du dich mit der E-Mail-Adresse an (oder weiter mit dem Benutzernamen).')||''));
+  /* Passwort */
+  const op=authField({label:'Aktuelles Passwort',icon:'lock',type:'password',ph:'Passwort',ac:'current-password',eye:true});
+  op.check=v=>v?ok0:{ok:false,type:'bad',msg:'Bitte Passwort eingeben'};
+  const np=authField({label:'Neues Passwort',icon:'lock',type:'password',ph:'Mindestens 8 Zeichen',ac:'new-password',eye:true,hint:'Mindestens 8 Zeichen'});
+  np.check=v=>v.length>=8?ok0:{ok:false,type:'bad',msg:`Mindestens 8 Zeichen (noch ${8-v.length})`};
+  const pb=h('button',{type:'button',class:'btn primary wfull'},'Passwort ändern');
+  const pref=wire([op,np],pb);
+  pb.onclick=()=>withBusy(pb,async()=>{
+    try{await Cloud.changePassword(op.inp.value,np.inp.value);toast('Passwort geändert');op.inp.value='';np.inp.value='';op.touched=np.touched=false}
+    catch(e){if(!e.silent){op.set('bad',e.msg||'Fehler');op.touched=false}}
+    pref();
+  });
+  host.append(card('Passwort',op.root,np.root,pb));
+}
+
 /* ───────── Einstellungen ───────── */
-V.profile={enter(){buildSettings()}};
+V.profile={enter(){buildSettings();if(Cloud.user&&Cloud.prof().email&&!Cloud.user.emailVerified)Cloud.reloadUser().catch(()=>{})}};
 /* Skeleton-Baustein (grauer, schimmernder Platzhalter im Layout des echten Elements) */
 const skel=(w,hh,r=8)=>h('span',{class:'skel',style:`display:block;width:${typeof w==='number'?w+'px':w};height:${hh}px;border-radius:${r}px`});
 /* Profilbild: Foto oder Symbol (Home-Button und Profil) */
@@ -2337,21 +2423,7 @@ function streakOf(list){
   return{n,thisWeek:set.has(cw),weeks:Array.from({length:8},(_,i)=>set.has(cw-7+i))};
 }
 const flameSvg=on=>`<svg width="30" height="30" viewBox="0 0 24 24" fill="${on?'url(#flg)':'none'}" stroke="${on?'none':'currentColor'}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><defs><linearGradient id="flg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#ff4d5e"/></linearGradient></defs><path d="M12 2.5s1.2 3.4-.9 5.9C9.2 10.6 6.5 12 6.5 15.6a5.5 5.5 0 0 0 11 0c0-2.4-1.3-3.9-2.4-5.2-.4 1.3-1 2-2.1 2.6.5-3.4-.1-7.2-1-10.5z"/></svg>`;
-async function editProfileName(){
-  const r=await inputDialog({title:'Profil bearbeiten',fields:[{label:'Name',icon:'user',value:Cloud.prof().name||'',ph:'Vor- und Nachname',ac:'name',check:v=>v.length<2?'Bitte gib deinen Namen ein':''}],ok:'Speichern'});
-  if(!r)return;
-  const close=busyModal('Wird gespeichert…');
-  try{await Cloud.updateName(r[0]);toast('Gespeichert')}catch(e){toast(e.msg||'Speichern fehlgeschlagen')}finally{close()}
-  if(cur()==='profile')buildSettings();
-}
-async function addEmailFlow(){
-  const r=await inputDialog({title:'E-Mail-Adresse hinzufügen',text:'Wir schicken einen Bestätigungslink an die neue Adresse. Danach meldest du dich mit der E-Mail-Adresse an.',
-    fields:[{label:'E-Mail',icon:'mail',type:'email',ph:'name@beispiel.de',check:v=>RX_MAIL.test(v)?'':'Ungültige E-Mail-Adresse'},
-      {label:'Aktuelles Passwort',icon:'lock',type:'password',ac:'current-password',check:v=>v?'':'Bitte Passwort eingeben'}],ok:'Link senden'});
-  if(!r)return;
-  const close=busyModal('Wird gesendet…');
-  try{await Cloud.addEmail(r[0],r[1]);toast('Bestätigungs-Mail gesendet')}catch(e){toast(e.msg||'Fehler')}finally{close()}
-}
+function editProfileName(){go('editp')}
 async function deleteAccountFlow(){
   if(play.running){toast('Erst das Training beenden');return}
   if(!await confirmDialog({title:'Konto löschen?',text:'Dein Konto und alle Daten im Konto (Programme, Einstellungen, Logbuch, Profil) werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.',ok:'Weiter',danger:true}))return;
@@ -2465,12 +2537,10 @@ function buildSettings(){
       h('div',{class:'srow'},h('span',{class:'sd '+(hasMail?'on':'')}),h('b',{},'E-Mail'),h('span',{},hasMail?P.email:'keine (alter Benutzername-Login)')));
     if(u&&hasMail&&!u.emailVerified){
       const b1=h('button',{type:'button',class:'btn',onclick:()=>withBusy(b1,async()=>{try{await Cloud.resendVerify();toast('Bestätigungs-Mail gesendet')}catch(e){toast(e.msg||'Fehler')}})},'Mail erneut senden');
-      const b2=h('button',{type:'button',class:'btn',onclick:()=>withBusy(b2,async()=>{try{const v=await Cloud.reloadUser();toast(v?'E-Mail bestätigt':'Noch nicht bestätigt');updAcct()}catch(e){toast(e.msg||'Fehler')}})},'Ich habe bestätigt');
-      acctBox.append(h('div',{class:'hint'},'Deine E-Mail-Adresse ist noch nicht bestätigt. Wir haben dir einen Link geschickt.'),h('div',{class:'addrow'},b1,b2));
+      acctBox.append(h('div',{class:'hint'},'Deine E-Mail-Adresse ist noch nicht bestätigt. Wir haben dir einen Link geschickt, danach verschwindet dieser Hinweis von selbst.'),h('div',{class:'addrow'},b1));
     }
     acctBox.append(h('div',{class:'hint'},'Programme, Einstellungen und Logbuch werden automatisch synchronisiert. Du bleibst angemeldet, auch wenn die App geschlossen wird.'),
-      h('div',{class:'addrow'},h('button',{type:'button',class:'btn',onclick:editProfileName},'Profil bearbeiten'),h('button',{type:'button',class:'btn danger',onclick:()=>Cloud.logout()},'Abmelden')));
-    if(!hasMail)acctBox.append(h('div',{class:'addrow'},h('button',{type:'button',class:'btn',onclick:addEmailFlow},'E-Mail-Adresse hinzufügen')));
+      h('div',{class:'addrow'},h('button',{type:'button',class:'btn',onclick:editProfileName},'Profil bearbeiten')));
     acctBox.append(h('button',{type:'button',class:'danglink',onclick:deleteAccountFlow},'Konto endgültig löschen…'));
   };
   const paintSt=()=>{if(!ast)return;ast.textContent=Cloud.text();const st=Cloud.ind();aic.className='siico si-'+st;aic.innerHTML=I(st==='ok'?'cloudok':st==='err'?'clouderr':'syncarr',18)};
@@ -2574,9 +2644,7 @@ function buildSettings(){
     det('Musik',spBox,'musik'),
     det('Sicherung',[h('div',{class:'hint',style:'margin-top:0'},'Speichert alle Programme, Kategorien, Einstellungen und das Logbuch als Datei im Download-Ordner.'),
       h('div',{class:'addrow'},h('button',{class:'btn',onclick:()=>exportAll()},'Exportieren'),h('button',{class:'btn',onclick:()=>$('#bfile').click()},'Importieren'))],'sich'),
-    h('div',{style:'margin-top:22px;display:flex'},h('button',{class:'btn danger',onclick:async()=>{
-      if(!await confirmDialog({title:'Alle Daten löschen?',text:'Programme, Kategorien und Einstellungen werden zurückgesetzt'+(Cloud.name()?' (auch im Konto)':'')+'.',ok:'Zurücksetzen',danger:true}))return;
-      S=seed();save();applyAppearance();toast('Zurückgesetzt');resetHome()}},'Alle Daten zurücksetzen')));
+    ...(Cloud.name()?[h('div',{style:'margin-top:22px;display:flex'},h('button',{type:'button',class:'btn danger',onclick:()=>Cloud.logout()},'Abmelden'))]:[]));
 }
 
 /* ───────── Musik (Spotify Web API, Anmeldung per PKCE – ohne Server) ─────────
