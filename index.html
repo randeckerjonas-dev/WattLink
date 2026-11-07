@@ -3182,6 +3182,27 @@ function closeFs(){
 window.addEventListener('resize',()=>{if(ld.full)layoutFs()});
 document.addEventListener('fullscreenchange',()=>{if(ld.full&&!document.fullscreenElement)closeFs()});
 function drawLd(){if(ld.T)paintLd(ld.T);if(ld.full)paintLd(ld.full.T)}
+/* Treppenkurve: Sprünge (mehrere aufeinanderfolgende große Änderungen in gleicher Richtung) werden zu EINER senkrechten Linie zusammengefasst.
+   Ergebnis: Liste von Segmenten {x0,x1,a,b} in Index-Einheiten; x0==x1 → senkrecht von a nach b, sonst waagerecht auf Höhe a. */
+function stepSegs(A,thr){
+  const out=[],n=A.length;let from=null;
+  for(let j=0;j<n-1;){
+    const a=A[j],b=A[j+1];
+    if(a==null){from=null;j++;continue}
+    if(from==null)from=j;
+    if(b==null){out.push({x0:from,x1:j+1,a,b:a});from=null;j++;continue}
+    if(Math.abs(b-a)>thr){
+      let k=j+1;const sg=Math.sign(b-a);
+      while(k<n-1&&A[k+1]!=null&&Math.sign(A[k+1]-A[k])===sg&&Math.abs(A[k+1]-A[k])>thr)k++;
+      out.push({x0:from,x1:j+1,a,b:a},{x0:j+1,x1:j+1,a,b:A[k]});from=j+1;j=k;
+    }else{
+      out.push({x0:from,x1:j+1,a,b:a});
+      if(a!==b)out.push({x0:j+1,x1:j+1,a,b});
+      from=j+1;j++;
+    }
+  }
+  return out;
+}
 function paintLd(T){
   const cv=T.cv;if(!cv||!cv.isConnected||!ld.s)return;
   const par=cv.parentNode,Wd=par.clientWidth;if(Wd<=0)return;
@@ -3207,8 +3228,12 @@ function paintLd(T){
   for(let j=0;j<len;j++)if(P[j]){const x0=X(j,len),x1=X(j+1,len);g.fillRect(x0,Tp,Math.max(1,x1-x0),ph)}
   if(sh.plan){const G=pick(s.g);g.fillStyle=`rgba(${TC.n},.15)`;
     for(let j=0;j<len;){if(G[j]==null){j++;continue}let k=j;while(k<len&&G[k]!=null)k++;
-      /* Treppenform: jeder Wert wird bis zum nächsten Messpunkt waagerecht gehalten, der Wechsel ist senkrecht */
-      g.beginPath();g.moveTo(X(j,len),Y(0));for(let q=j;q<k;q++){g.lineTo(X(q,len),Y(G[q]));g.lineTo(X(q+1,len),Y(G[q]))}g.lineTo(X(k,len),Y(0));g.fill();j=k}}
+      /* Treppenform mit zusammengefassten Sprüngen (eine durchgehende senkrechte Linie) */
+      const sg=stepSegs(G.slice(j,k),ftp*.04);
+      if(sg.length){g.beginPath();g.moveTo(X(j+sg[0].x0,len),Y(0));
+        sg.forEach(e=>{g.lineTo(X(j+e.x0,len),Y(e.a));g.lineTo(X(j+e.x1,len),Y(e.b))});
+        const l=sg[sg.length-1];g.lineTo(X(j+l.x1,len),Y(0));g.fill()}
+      j=k}}
   g.setLineDash([5,4]);g.strokeStyle=`rgba(${TC.inkr},.35)`;g.lineWidth=1;g.beginPath();g.moveTo(L,Y(ftp));g.lineTo(L+pw,Y(ftp));g.stroke();g.setLineDash([]);
   g.fillStyle=`rgba(${TC.inkr},.55)`;g.textAlign='left';g.fillText('FTP',L+3,Y(ftp)-7);
   const hv=s.h.filter(v=>v!=null),cvv=s.c.filter(v=>v!=null);
@@ -3223,11 +3248,11 @@ function paintLd(T){
   if(useC){const C=col(s.c);g.strokeStyle=LDC.c;g.lineWidth=1.2;g.beginPath();let on=false;
     for(let j=0;j<len;j++){const v=C[j];if(v==null){on=false;continue}const x=X(j,len),y=YC(v);on?g.lineTo(x,y):g.moveTo(x,y);on=true}g.stroke()}
   if(sh.w){const Wv=col(s.w),zc=ld.color==='p';
-    for(let j=0;j<len-1;j++){const a=Wv[j],b=Wv[j+1];if(a==null||b==null)continue;
-      g.lineWidth=zc?2:1.4;
-      /* waagerecht auf Höhe von a bis zum nächsten Punkt, dann senkrecht zu b (kein schräges Verbinden) */
-      g.strokeStyle=zc?PWZ_COL[pwrPos(a/ftp*100).i]:LDC.w;g.beginPath();g.moveTo(X(j,len),Y(a));g.lineTo(X(j+1,len),Y(a));g.stroke();
-      if(a!==b){g.strokeStyle=zc?PWZ_COL[pwrPos((a+b)/2/ftp*100).i]:LDC.w;g.beginPath();g.moveTo(X(j+1,len),Y(a));g.lineTo(X(j+1,len),Y(b));g.stroke()}}}
+    g.lineWidth=zc?2:1.4;
+    /* waagerecht halten, Sprünge als eine senkrechte Linie (kein schräges Verbinden, keine kleinen Treppchen) */
+    stepSegs(Wv,ftp*.04).forEach(e=>{
+      g.strokeStyle=zc?PWZ_COL[pwrPos((e.x0===e.x1?(e.a+e.b)/2:e.a)/ftp*100).i]:LDC.w;
+      g.beginPath();g.moveTo(X(e.x0,len),Y(e.a));g.lineTo(X(e.x1,len),Y(e.x0===e.x1?e.b:e.a));g.stroke()});}
   if(useH&&hv.length){const Hh=col(s.h),zc=ld.color==='h';
     for(let j=0;j<len-1;j++){const a=Hh[j],b=Hh[j+1];if(a==null||b==null)continue;
       g.strokeStyle=zc?Z[hrPos((a+b)/2,Z).i].col:LDC.h;g.lineWidth=zc?2:1.3;
