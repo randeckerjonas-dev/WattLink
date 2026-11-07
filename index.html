@@ -94,8 +94,8 @@ details[open] summary::after{transform:rotate(225deg)}
 @keyframes beat{0%{transform:scale(1)}14%{transform:scale(1.28)}30%,100%{transform:scale(1)}}
 .ring>span.live{animation:beat 1.7s ease-out infinite}
 .statusrow{display:flex;gap:6px;padding:2px 18px 6px}
-.statusrow .pill{flex:1 1 auto;min-width:0;justify-content:center;gap:6px;padding:9px 10px;font-size:12px;white-space:nowrap}
-.statusrow .pill .ic{flex:none}.statusrow #trconn{flex:0 0 auto;padding:9px 14px}.pill .pt{overflow:hidden;text-overflow:ellipsis}
+.statusrow .pill{flex:0 0 auto;justify-content:center;gap:8px;padding:10px 15px;font-size:13px;white-space:nowrap;color:var(--ink2)}
+.statusrow .pill .ic{flex:none}.statusrow .pill .pt:empty{display:none}.pill .pt{overflow:hidden;text-overflow:ellipsis}
 .srow{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;border-top:1px solid rgba(var(--n),.1)}
 .srow:first-child{border-top:0;padding-top:0}
 .srow b{font-weight:400;min-width:92px}
@@ -125,6 +125,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .dot{width:8px;height:8px;border-radius:50%;background:#c4bfdc}
 .pill.on .dot{background:#2ecf93;box-shadow:0 0 0 4px rgba(46,207,147,.2)}
 .pill.busy .dot{background:#ffb02e;animation:pulse 1s infinite}
+.pill.blink .dot{background:#2ecf93;box-shadow:0 0 0 4px rgba(46,207,147,.2);animation:pulse 1s infinite}
 @keyframes pulse{50%{opacity:.35}}
 /* home */
 .sec{display:flex;align-items:center;gap:9px;margin:20px 4px 10px;font-size:14px;letter-spacing:.4px;color:var(--ink2);text-transform:uppercase}
@@ -483,9 +484,9 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
       <button class="syncind glass" id="home-sync" type="button" aria-label="Synchronisierung"></button>
     </header>
     <div class="statusrow">
-      <button class="pill glass" id="conn"><span class="dot"></span><span data-i="chip" data-s="16"></span><span id="conn-t" class="pt">Verbinden</span></button>
-      <button class="pill glass" id="hrconn"><span class="dot"></span><span data-i="strap" data-s="18"></span><span id="hrconn-t" class="pt">Gurt</span></button>
-      <button class="pill glass" id="trconn" aria-label="Heimtrainer"><span class="dot"></span><span data-i="bike" data-s="18"></span><span id="trconn-t" class="pt" hidden></span></button>
+      <button class="pill glass" id="conn" aria-label="ESP"><span class="dot"></span><span data-i="chip" data-s="26"></span><span id="conn-t" class="pt" hidden></span></button>
+      <button class="pill glass" id="hrconn" aria-label="Brustgurt"><span class="dot"></span><span data-i="strap" data-s="30"></span><span id="hrconn-t" class="pt"></span></button>
+      <button class="pill glass" id="trconn" aria-label="Heimtrainer"><span class="dot"></span><span data-i="bike" data-s="30"></span><span id="trconn-t" class="pt" hidden></span></button>
     </div>
     <div class="scroll" id="home-body"></div>
     <div class="fabs abovenav">
@@ -672,8 +673,8 @@ function h(tag,props,...kids){
 /* ───────── Icons (dünne Linien) ───────── */
 const PATHS={
   chip:'<rect x="6.5" y="6.5" width="11" height="11" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/>',
-  strap:'<rect x="2.5" y="8" width="19" height="8" rx="2.5"/><path d="M12 17.8s-3.6-2.1-3.6-4.7a2 2 0 0 1 3.6-1.2 2 2 0 0 1 3.6 1.2c0 2.6-3.6 4.7-3.6 4.7z" fill="var(--hrfill,none)"/>',
-  bike:'<circle cx="7" cy="17" r="3.2"/><circle cx="18" cy="17" r="2.2"/><path d="M7 17l3.5-7h4l3.5 7M10.5 10L9 7.5H6.5M14.5 10l1-3h2.2M12 13.5h3"/>',
+  strap:'<path d="M7.4 9.9H3.1a1.5 1.5 0 0 0-1.5 1.5v1a1.5 1.5 0 0 0 1.5 1.5h5M16.6 9.9h4.3a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-5"/><path d="M12 16.6C8 13.8 6.6 12 6.6 10.2c0-1.6 1.2-2.8 2.6-2.8 1.2 0 2.2.7 2.8 1.7.6-1 1.6-1.7 2.8-1.7 1.4 0 2.6 1.2 2.6 2.8 0 1.8-1.4 3.6-5.4 6.4z"/>',
+  bike:'<g transform="translate(2.4 0)"><path d="M.2 1.8l4.4 2.4 3.9 11.3M13.7 5.6h4.8M16.5 5.7l-1.9 7.6M5.6 21.5C6.3 17.3 10.3 13.6 14.6 13.3c1.7-.2 3.2-.1 4.6 0l-1.4 8.3z"/><circle cx="11.4" cy="18.3" r="2.6"/></g>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   minus:'<path d="M5 12h14"/>',
   upload:'<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
@@ -1443,7 +1444,7 @@ const soon=()=>toast('Kommt bald');
                  "SP <watt>\n"               (Antwort auf GET: am Trainer eingestellte Watt)       */
 const Device={
   state:'off',mode:null,power:null,rpm:null,hr:null,active:false,lastSent:null,listeners:new Set(),
-  rxAt:0,strap:null,strapName:'',trainerOk:null,   // strap: null = unbekannt, 1 = sucht, 2 = verbunden, 3 = verbunden ohne HF
+  rxAt:0,strap:null,strapName:'',trainerOk:null,   // strap: null = unbekannt, 0 = Suche beendet, 1 = sucht, 2 = verbunden, 3 = verbunden ohne HF
   fresh(){return this.state==='on'&&performance.now()-this.rxAt<3500},
   filter(){return S.settings.hrFilter??'Polar'},
   sendFilter(){if(this.mode==='ble'&&this.state==='on')this._write(`HRF ${this.filter()}\n`)},
@@ -1518,19 +1519,20 @@ const Device={
 function updConn(){
   const st=Device.state,p=$('#conn');
   p.className='pill glass '+(st==='on'?'on':st==='connecting'?'busy':'');
-  $('#conn-t').textContent=st==='on'?(Device.mode==='sim'?'Demo':'Verbunden'):st==='connecting'?'Verbinde…':'Verbinden';
-  const si=strapInfo();$('#hrconn').className='pill glass '+si.c;$('#hrconn-t').textContent=si.t;
+  p.setAttribute('aria-label','ESP: '+(st==='on'?(Device.mode==='sim'?'Demo':'verbunden'):st==='connecting'?'verbindet':'nicht verbunden – tippen zum Verbinden'));
+  const si=strapInfo();$('#hrconn').className='pill glass '+si.c;$('#hrconn-t').textContent=/bpm/.test(si.t)?si.t:'';
   const ti=trainerInfo();$('#trconn').className='pill glass '+ti.c;
 }
 /* Status des Brustgurts (meldet der ESP per STAT-Zeile) */
 function strapInfo(){
   const D=Device;
-  if(D.state!=='on')return{c:'',t:'Gurt',d:'ESP nicht verbunden'};
+  if(D.state!=='on')return{c:'',t:'',d:'ESP nicht verbunden'};
   const nm=D.strapName?`: ${D.strapName}`:'';
-  if(D.strap===2)return{c:'on',t:D.hr?`${D.hr} bpm`:'Gurt verbunden',d:`verbunden${nm}`};
-  if(D.strap===3)return D.hr?{c:'on',t:`${D.hr} bpm`,d:`verbunden${nm}`}:{c:'busy',t:'Kein Signal',d:`verbunden${nm}, aber keine Herzfrequenz (Gurt angelegt und befeuchtet?)`};
-  if(D.strap===1)return{c:'busy',t:'Sucht…',d:'wird gesucht'};
-  return D.hr?{c:'on',t:`${D.hr} bpm`,d:'Herzfrequenz kommt an'}:{c:'',t:'Gurt',d:'keine Gurt-Info vom ESP'};
+  if(D.strap===2)return{c:'on',t:D.hr?`${D.hr} bpm`:'',d:`verbunden${nm}`};
+  if(D.strap===3)return D.hr?{c:'on',t:`${D.hr} bpm`,d:`verbunden${nm}`}:{c:'blink',t:'',d:`verbunden${nm}, aber keine Herzfrequenz (Gurt angelegt und befeuchtet?)`};
+  if(D.strap===1)return{c:'busy',t:'',d:'wird gesucht (1 min)'};
+  if(D.strap===0)return{c:'',t:'',d:'nicht verbunden – Suche beendet, Tippen sucht 1 min neu'};
+  return D.hr?{c:'on',t:`${D.hr} bpm`,d:'Herzfrequenz kommt an'}:{c:'',t:'',d:'keine Gurt-Info vom ESP'};
 }
 function trainerInfo(){
   const D=Device;
@@ -3211,7 +3213,11 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-act="back"]'))h
 $('#home-avatar').addEventListener('click',()=>switchTab('profile'));
 $$('#nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 $('#btn-free').addEventListener('click',soon);   // Freie Fahrt: Logik folgt später
-$('#hrconn').addEventListener('click',()=>toast('Brustgurt: '+strapInfo().d));
+$('#hrconn').addEventListener('click',()=>{
+  const D=Device;
+  if(D.state==='on'&&D.mode==='ble'&&D.strap!==2){D.sendFilter();toast('Brustgurt wird 1 min lang gesucht');return}
+  toast('Brustgurt: '+strapInfo().d);
+});
 $('#trconn').addEventListener('click',()=>toast('Heimtrainer: '+trainerInfo().d));
 $('#btn-create').addEventListener('click',()=>go('create',{draft:newProgram(),isNew:true}));
 $('#conn').addEventListener('click',()=>{Device.state==='on'?(Device.disconnect(),toast('Getrennt')):Device.connect()});
