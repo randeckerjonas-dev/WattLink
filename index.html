@@ -9,7 +9,7 @@
 :root{
   --ink:#26204d; --ink2:#6c6592; --ink3:#a49fc4;
   --a1:#d946ef; --a2:#8b5cf6; --a3:#ff5fa2;
-  --glass:rgba(var(--wr),.55);--wr:255,255,255;--bgsp:1;
+  --glass:rgba(var(--wr),.55);--wr:255,255,255;--sel:#fff;--bgsp:1;
   --stroke:rgba(var(--wr),.78);
   --shadow:0 10px 32px rgba(var(--sh),.14);
   --r:24px;
@@ -63,7 +63,7 @@ details.glass{margin-top:14px}
 .bk>i{width:5px;align-self:stretch;border-radius:3px;flex:none}
 .bk .bn{flex:1;min-width:0;font-size:14px}.bk small{display:block;font-size:12px;color:var(--ink2)}
 .bk .bv{text-align:right;font-size:14px;min-width:62px}.bk .bh{text-align:right;font-size:13px;color:var(--ink2);min-width:64px}
-.rpe{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;outline:none;border:0;--d:rgba(124,92,255,.7)}
+.rpe{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;outline:none;border:0;--d:rgba(var(--a2r),.8)}
 .rpe::-webkit-slider-runnable-track{height:8px;border:0;border-radius:4px;margin:0 13px;background:
  radial-gradient(circle at 4px 50%,var(--d) 4px,transparent 4.5px),
  radial-gradient(circle at calc(4px + (100% - 8px)*.25) 50%,var(--d) 4px,transparent 4.5px),
@@ -199,12 +199,12 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 8px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;font-size:14px;background:rgba(var(--wr),.45);border:1px solid rgba(var(--wr),.8);color:var(--ink2)}
-.chip.sel{background:#fff;color:var(--ink);box-shadow:0 4px 14px rgba(var(--sh),.18);font-weight:400}
+.chip.sel{background:var(--sel);color:var(--ink);box-shadow:0 4px 14px rgba(var(--sh),.18);font-weight:400}
 .cd{width:10px;height:10px;border-radius:50%;display:block}
 .seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:4px;border-radius:16px;background:rgba(var(--wr),.4);border:1px solid rgba(var(--wr),.75);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .seg button{position:relative;z-index:1;border:0;background:none;font-size:14px;padding:9px 4px;color:var(--ink2);display:flex;align-items:center;justify-content:center;gap:6px}
 .seg button.on{color:var(--ink);font-weight:400}
-.seg .ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/var(--n));border-radius:12px;background:#fff;box-shadow:0 3px 12px rgba(var(--sh),.2);transform:translateX(calc(var(--i)*100%));transition:transform .25s cubic-bezier(.3,.8,.3,1)}
+.seg .ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/var(--n));border-radius:12px;background:var(--sel);box-shadow:0 3px 12px rgba(var(--sh),.2);transform:translateX(calc(var(--i)*100%));transition:transform .25s cubic-bezier(.3,.8,.3,1)}
 .seg.sm button{font-size:13px;padding:7px 4px}
 .nameinp{width:100%;font:inherit;font-size:27px;font-weight:300;background:transparent;border:0;border-bottom:1px solid rgba(var(--n),.25);padding:6px 2px;color:var(--ink);outline:none;border-radius:0}
 .nameinp::placeholder{color:var(--ink3)}
@@ -276,8 +276,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .pbody{flex:1;overflow-y:auto;padding:12px 18px 110px}
 .bcard{padding:14px 16px;margin-top:14px}
 .chartwrap{position:relative;margin-top:14px}
-.plhr{position:absolute;top:5px;right:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;padding:0;border:1px solid var(--stroke);background:rgba(var(--wr),.5);color:var(--a2);z-index:2}
-.plhr.on{color:#ef4444}.plhr.on svg{fill:currentColor}
+.plhr{position:absolute;top:5px;left:12px;padding:6px 14px;z-index:2;color:var(--ink)}
 #pl-info{position:absolute;left:8px;right:8px;top:8px;margin:0;z-index:6;pointer-events:none;min-height:0;padding:10px 14px;background:rgba(var(--wr),.82)}
 /* Play-Header: Minimieren-Button links neben Name + Gesamt-Fortschritt (wie beim Spotify-Widget) */
 .phead{display:flex;align-items:center;gap:12px;padding:10px 18px 0;flex:none}
@@ -450,7 +449,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 :root[data-theme="forest"]{--ink:#14301f;--ink2:#4d7058;--ink3:#96b8a0;--a1:#84cc16;--a2:#10b981;--a3:#34d399;--a1r:132,204,22;--a2r:16,185,129;--n:77,112,88;--sh:40,140,90;--deep:20,80,50;--inkr:20,48,31;--fab:#047857;--onacc:#0f2a1a;--bgs:#eaf8ee;--bg1:#e9f8ee;--bg2:#f5fbe0;--o1:#a8f0c6;--o2:#d4f59a;--o3:#9fe3d3;--o4:#e6f9b5}
 :root[data-theme="ruby"]{--ink:#3a1020;--ink2:#8a5a6c;--ink3:#c4a0ae;--a1:#ef4444;--a2:#ec4899;--a3:#fb7185;--a1r:239,68,68;--a2r:236,72,153;--n:138,90,108;--sh:200,60,90;--deep:110,20,50;--inkr:58,16,32;--fab:#be123c;--onacc:#fff;--bgs:#ffe9ee;--bg1:#ffe9ee;--bg2:#ffe6f4;--o1:#ffb3c1;--o2:#ffc2e2;--o3:#ff9fb2;--o4:#ffd6a8}
 /* Dunkelmodus */
-:root[data-dark]{color-scheme:dark;--ink:#f1eefc;--ink2:#b3adce;--ink3:#7a7499;--wr:34,30,62;--stroke:rgba(255,255,255,.16);--n:190,184,225;--deep:0,0,20;--inkr:241,238,252;--sh:0,0,0;--fab:#c4b5fd;--bgs:#0e0b1f;--bg1:#14102b;--bg2:#0b0919;--o1:rgba(var(--a1r),.55);--o2:rgba(var(--a2r),.5);--o3:rgba(var(--a1r),.35);--o4:rgba(var(--a2r),.35)}
+:root[data-dark]{color-scheme:dark;--sel:#3d3670;--ink:#f1eefc;--ink2:#b3adce;--ink3:#7a7499;--wr:34,30,62;--stroke:rgba(255,255,255,.16);--n:190,184,225;--deep:0,0,20;--inkr:241,238,252;--sh:0,0,0;--fab:#c4b5fd;--bgs:#0e0b1f;--bg1:#14102b;--bg2:#0b0919;--o1:rgba(var(--a1r),.55);--o2:rgba(var(--a2r),.5);--o3:rgba(var(--a1r),.35);--o4:rgba(var(--a2r),.35)}
 /* statischer Hintergrund */
 .bg.static i{animation:none}
 .bg.static i:nth-child(1){transform:translate(-22vw,-16vh)}
@@ -554,7 +553,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
         <div class="brow"><div class="bl" id="pl-label"></div><div class="bt" id="pl-rem"></div></div>
         <div class="prog"><i id="pl-prog"></i></div>
       </div>
-      <div class="chartwrap"><div class="glass chart" id="pl-chart"></div><button type="button" class="plhr" id="pl-hr" aria-label="Herzfrequenz im Diagramm anzeigen" aria-pressed="false" data-i="heart" data-s="18"></button>
+      <div class="chartwrap"><div class="glass chart" id="pl-chart"></div><button type="button" class="chip plhr" id="pl-hr" aria-label="Herzfrequenz im Diagramm anzeigen" aria-pressed="false" data-i="heart" data-s="22"></button>
       <div class="glass info" id="pl-info" style="display:none"></div></div>
       <div class="rings">
         <div class="glass ring"><svg class="hr-arc" id="pw-arc" viewBox="0 0 100 100"></svg><span data-i="bolt" data-s="22"></span><div class="v" id="r-w">–</div><div class="u" id="r-wu">&nbsp;</div></div>
@@ -1033,7 +1032,7 @@ const Cloud={
   apply(r){
     const j=this.parse(r);if(!j)return;
     if(play.running){this.pending=r;return}
-    this.pending=null;S=j;persistLocal();applyAppearance();this.refreshUI();
+    this.pending=null;{const k=S.settings&&S.settings.spId;S=j;if(k&&!(S.settings&&S.settings.spId)){S.settings=S.settings||{};S.settings.spId=k}}persistLocal();applyAppearance();this.refreshUI();
   },
   refreshUI(){if(TABS.includes(cur()))render()},
   async start(){
@@ -1153,9 +1152,10 @@ const Cloud={
   async wipeLocal(){
     this.stopListen();clearTimeout(this.timer);clearTimeout(this.retryT);this.dirty=false;this.needSetup=false;this.user=null;
     LSKEYS.forEach(k=>LS(k,null));
-    S=seed();persistLocal();applyAppearance();
+    const spKeep=S.settings&&S.settings.spId;
+    S=seed();if(spKeep)S.settings.spId=spKeep;persistLocal();applyAppearance();   // Spotify-Verbindung (Client-ID + Token) bleibt beim Abmelden/Anmelden erhalten
     try{await idbTx(['runs','recs'],'readwrite',tx=>{tx.objectStore('runs').clear();tx.objectStore('recs').clear()})}catch(e){}
-    spStore({});this.pending=null;this.st='';this.emit();
+    this.pending=null;this.st='';this.emit();
   },
   async logout(){
     if(!await confirmDialog({title:'Abmelden?',text:'Die Daten auf diesem Gerät werden entfernt. Im Konto bleiben sie gespeichert und kommen beim nächsten Anmelden zurück.',ok:'Abmelden',danger:true}))return;
@@ -1329,7 +1329,7 @@ function drawChart(host,blocks,total,o={}){
   }
   blocks.forEach(b=>{
     const color=blockColor(b),x0=X(b.t0),x1=X(b.t0+b.dur),w=x1-x0,y0=Y(b.p0),y1=Y(b.p1);
-    const op=a>=0&&b.i!==a?.42:1,cls=b.i===a?'act':'';
+    const op=o.dimAll?.45:a>=0&&b.i!==a?.42:1,cls=!o.dimAll&&b.i===a?'act':'';
     if(mini||w<4){
       const g=mini?.5:.3;
       s+=`<polygon points="${f1(x0+g)},${f1(yb)} ${f1(x0+g)},${f1(y0)} ${f1(x1-g)},${f1(y1)} ${f1(x1-g)},${f1(yb)}" fill="${color}" opacity="${op}" class="${cls}"/>`;
@@ -1349,8 +1349,7 @@ function drawChart(host,blocks,total,o={}){
       if(!cur||t-prev[0]>3){cur={z,pts:[pt]};runs.push(cur);}
       else if(cur.z!==z){cur.pts.push(pt);cur={z,pts:[pt]};runs.push(cur)}
       else cur.pts.push(pt)});
-    runs.forEach(r=>{if(r.pts.length>1)s+=`<polyline points="${r.pts.join(' ')}" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round"/>`});
-    runs.forEach(r=>{if(r.pts.length>1)s+=`<polyline points="${r.pts.join(' ')}" fill="none" stroke="${HRZ_COL[r.z]}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`});
+    runs.forEach(r=>{if(r.pts.length>1)s+=`<polyline points="${r.pts.join(' ')}" fill="none" stroke="${HRZ_COL[r.z]}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`});
   }
   if(o.prog)s+=`<text x="${Wd-padR-2-(o.progDx||0)}" y="11" font-size="11.5" fill="currentColor" text-anchor="end">${o.prog}</text>`;
   s+='</svg>';
@@ -2176,9 +2175,9 @@ function playUI(){
 function drawPlayChart(){
   const tc=play.dragT!=null?play.dragT:play.elapsed;
   drawChart($('#pl-chart'),play.blocks,play.total,{h:190,cat:play.cat,active:blockIndexAt(play.blocks,tc),cursorT:tc,
-    prog:`${Math.floor(play.elapsed/60)}/${Math.round(play.total/60)} min`,progDx:44,hrs:play.showHr?play.hrs:null,hrZ:play.Z});
+    prog:`${Math.floor(play.elapsed/60)}/${Math.round(play.total/60)} min`,progDx:0,dimAll:play.showHr,hrs:play.showHr?play.hrs:null,hrZ:play.Z});
 }
-$('#pl-hr').addEventListener('click',()=>{play.showHr=!play.showHr;$('#pl-hr').classList.toggle('on',play.showHr);$('#pl-hr').setAttribute('aria-pressed',play.showHr);drawPlayChart()});
+$('#pl-hr').addEventListener('click',()=>{play.showHr=!play.showHr;$('#pl-hr').classList.toggle('sel',play.showHr);$('#pl-hr').setAttribute('aria-pressed',play.showHr);drawPlayChart()});
 (()=>{
   const host=$('#pl-chart'),info=$('#pl-info');let drag=false;
   const at=e=>{const g=host._geo;if(!g||!play.total)return;
@@ -2339,11 +2338,11 @@ const RPE=[['Sehr leicht','Locker, Unterhaltung problemlos'],['Leicht','Entspann
 function rpeInput(sm,onChange,init){
   if(init==null)delete sm.rpe;else sm.rpe=init;      // keine Vorauswahl: ohne Eingabe keine Daten
   const inp=h('input',{type:'range',class:'rpe unset',min:1,max:5,step:1,value:3,'aria-label':'Gefühlte Anstrengung'});
-  const info=h('div',{class:'rpd'},'Wie anstrengend war die Einheit? Slider ziehen.');
-  const pick=()=>{sm.rpe=+inp.value;inp.classList.remove('unset');info.replaceChildren(h('b',{},RPE[sm.rpe-1][0]),RPE[sm.rpe-1][1]);onChange&&onChange(true)};
+  const info=h('div',{style:'display:none'});
+  const pick=()=>{sm.rpe=+inp.value;inp.classList.remove('unset');onChange&&onChange(true)};
   ['input','change','pointerup'].forEach(ev=>inp.addEventListener(ev,pick));
-  if(init!=null){inp.value=init;inp.classList.remove('unset');info.replaceChildren(h('b',{},RPE[init-1][0]),RPE[init-1][1])}
-  return h('div',{style:'margin-top:16px'},inp,h('div',{class:'rpel'},h('span',{},'Locker'),h('span',{},'All out')),info);
+  if(init!=null){inp.value=init;inp.classList.remove('unset')}
+  return h('div',{style:'margin-top:16px'},inp,h('div',{class:'rpel'},h('span',{},'Locker'),h('span',{},'All out')));
 }
 /* Speichern-Button mit 30-s-Countdown; erscheint erst nach der RPE-Auswahl, dann läuft der Balken */
 function autoStart(btn,ms=30000){
@@ -2353,7 +2352,7 @@ function autoStart(btn,ms=30000){
   return{stop,restart};
 }
 /* Button zunächst verborgen; zeigt sich + startet Countdown bei jeder RPE-Eingabe */
-function gatedSave(btn){const cd=autoStart(btn);btn.style.display='none';return{stop:cd.stop,pick(){btn.style.display='';cd.restart()}}}
+function gatedSave(btn){const cd=autoStart(btn);cd.restart();return{stop:cd.stop,pick:cd.restart}}   // Button immer sichtbar; ohne Slider-Eingabe wird keine Anstrengung gespeichert
 function askSaveRun(sm){return new Promise(res=>{let m,cd;const done=v=>{cd&&cd.stop();closeModal(m);res(v)};
   const ok=h('button',{class:'btn primary',onclick:()=>done(true)},h('span',{},'Speichern'));
   m=openModal([h('h3',{},'Einheit speichern?'),h('p',{},`${fmtTime(sm.elapsed)} von ${fmtTime(sm.planned)}${sm.avgW!=null?` · Ø ${sm.avgW} W`:''}${sm.avgHr!=null?` · Ø ${sm.avgHr} bpm`:''}`),rpeInput(sm,()=>cd.pick()),
