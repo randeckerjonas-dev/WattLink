@@ -94,8 +94,8 @@ details[open] summary::after{transform:rotate(225deg)}
 @keyframes beat{0%{transform:scale(1)}14%{transform:scale(1.28)}30%,100%{transform:scale(1)}}
 .ring>span.live{animation:beat 1.7s ease-out infinite}
 .statusrow{display:flex;gap:6px;padding:2px 18px 6px}
-.statusrow .pill{flex:0 0 auto;justify-content:center;gap:8px;padding:10px 15px;font-size:13px;white-space:nowrap;color:var(--ink2)}
-.statusrow .pill .ic{flex:none}.statusrow .pill .pt:empty{display:none}.pill .pt{overflow:hidden;text-overflow:ellipsis}
+.statusrow .pill{flex:0 0 auto;justify-content:center;gap:8px;padding:9px 14px;font-size:13px;white-space:nowrap;color:var(--ink2)}
+.statusrow .pill .ic{flex:none;margin:-5px 0}.statusrow .pill .pt:empty{display:none}.pill .pt{overflow:hidden;text-overflow:ellipsis}
 .srow{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;border-top:1px solid rgba(var(--n),.1)}
 .srow:first-child{border-top:0;padding-top:0}
 .srow b{font-weight:400;min-width:92px}
@@ -486,7 +486,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
     <div class="statusrow">
       <button class="pill glass" id="conn" aria-label="ESP"><span class="dot"></span><span data-i="chip" data-s="26"></span><span id="conn-t" class="pt" hidden></span></button>
       <button class="pill glass" id="hrconn" aria-label="Brustgurt"><span class="dot"></span><span data-i="strap" data-s="30"></span><span id="hrconn-t" class="pt"></span></button>
-      <button class="pill glass" id="trconn" aria-label="Heimtrainer"><span class="dot"></span><span data-i="bike" data-s="30"></span><span id="trconn-t" class="pt" hidden></span></button>
+      <button class="pill glass" id="trconn" aria-label="Heimtrainer"><span class="dot"></span><span data-i="bike" data-s="29"></span><span id="trconn-t" class="pt" hidden></span></button>
     </div>
     <div class="scroll" id="home-body"></div>
     <div class="fabs abovenav">
