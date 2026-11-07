@@ -37,7 +37,8 @@ details.glass{margin-top:14px}
 .psub{font-size:12.5px;color:var(--ink2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px}
 .kpi small{display:block;font-size:12px;color:var(--ink2);letter-spacing:.3px}
-.kpi b{font-weight:300;font-size:24px;color:var(--ink)}.kpi b i{font-style:normal;font-size:13px;color:var(--ink2);margin-left:3px}
+.kpi b{font-weight:300;font-size:24px;color:var(--ink)}.kedit{width:26px;height:26px;color:var(--a2)}
+.kpi b i{font-style:normal;font-size:13px;color:var(--ink2);margin-left:3px}
 .ldcv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .ldchips{display:flex;gap:8px;margin-bottom:10px}
 .ldchips .chip{flex:1;justify-content:center;padding:9px 6px;color:var(--ink)}
@@ -308,6 +309,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .hr-arc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
 .hz{fill:none;stroke-width:5;stroke-linecap:round;opacity:.3;transition:opacity .35s,stroke-width .35s}
 .hz.on{opacity:1;stroke-width:8;filter:drop-shadow(0 0 3px currentColor)}
+.hztrack{fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round;opacity:.1}
 .hzd{fill:#fff;stroke-width:2.6;opacity:0;transition:opacity .3s,stroke .3s;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
 .ring .zl{font-size:11px;color:var(--ink2);margin-top:4px}
 .ring .zl b{font-weight:500;color:var(--ink)}
@@ -556,7 +558,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
       <div class="glass info" id="pl-info" style="display:none"></div></div>
       <div class="rings">
         <div class="glass ring"><svg class="hr-arc" id="pw-arc" viewBox="0 0 100 100"></svg><span data-i="bolt" data-s="22"></span><div class="v" id="r-w">–</div><div class="u" id="r-wu">&nbsp;</div></div>
-        <div class="glass ring"><span data-i="cycle" data-s="22"></span><div class="v" id="r-c">–</div><div class="u">rpm</div></div>
+        <div class="glass ring"><svg class="hr-arc" id="cad-arc" viewBox="0 0 100 100"></svg><span data-i="cycle" data-s="22"></span><div class="v" id="r-c">–</div><div class="u">rpm</div></div>
         <div class="glass ring" id="hr-ring"><svg class="hr-arc" id="hr-arc" viewBox="0 0 100 100"></svg><span data-i="heart" data-s="22"></span><div class="v" id="r-h">–</div><div class="u" id="r-hu">&nbsp;</div></div>
       </div>
       <div class="mus" id="mus">
@@ -2163,6 +2165,7 @@ function playUI(){
   const es=Math.floor(t);$('#pl-el').textContent=fmtTime(es);$('#pl-tr').textContent='-'+fmtTime(Math.max(0,Math.round(play.total)-es));
   updPw();
   $('#r-c').textContent=Device.rpm!=null&&Device.state==='on'?Device.rpm:'–';
+  updCad();
   updHr();
   const nx=nextPhaseStart();$('#btn-skip').classList.toggle('off',nx==null);
   const fr=Device.fresh(),ics=$$('.rings .ring>span');   // Symbole pulsieren nur, solange der jeweilige Wert wirklich ankommt
@@ -2229,7 +2232,36 @@ function moveDot(dot,to,jump){
   const step=now=>{const k=Math.min(1,(now-t0)/D),e=1-Math.pow(1-k,3);put(from+(to-from)*e);if(k<1)st.raf=requestAnimationFrame(step)};
   st.raf=requestAnimationFrame(step);
 }
-function buildArcs(){play.Z=hrZones();buildArc('#hr-arc',HRZ_COL,'hz-dot');buildArc('#pw-arc',PWZ_COL,'pw-dot')}
+/* Trittfrequenz-Zielzone: grüner Bogen (72° ≈ 20 % des Umfangs) fest oben. Der Punkt zeigt, wo die aktuelle rpm relativ zur Zielzone liegt. */
+const CAD_HALF=36;
+const cadZone=p=>{                                   // p = geglättete Leistung in % FTP → Zielbereich in rpm (fließend, keine Stufen)
+  const c=80+14*Math.tanh((p-60)/70);                 // Mitte: ca. 76 rpm (locker) → 87 (FTP) → 93 (>150 %)
+  const half=6+7/(1+Math.exp((p-80)/18));            // Toleranz: ±12 rpm bei niedriger, ±6 bei hoher Leistung
+  const s=clamp((p-90)/60,0,1);                       // ab ca. 90 % FTP: untere Grenze rückt hoch (zu niedrige rpm = hohes Drehmoment)
+  return{lo:c-half*(1-.25*s),hi:c+half*(1+.15*s)};
+};
+function buildCad(){
+  const a=-CAD_HALF,b=CAD_HALF,[x0,y0]=arcPt(a),[x1,y1]=arcPt(b),[t0x,t0y]=arcPt(ARC_A0),[t1x,t1y]=arcPt(-ARC_A0);
+  $('#cad-arc').innerHTML=`<path class="hztrack" d="M${t0x.toFixed(2)} ${t0y.toFixed(2)}A45 45 0 1 1 ${t1x.toFixed(2)} ${t1y.toFixed(2)}"/>`+
+    `<path class="hz" d="M${x0.toFixed(2)} ${y0.toFixed(2)}A45 45 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}" stroke="#3ecf8e" style="color:#3ecf8e"/>`+
+    `<circle class="hzd" id="cad-dot" r="4.6" cx="0" cy="0"/>`;
+  play.cadP=null;play.cadT=0;
+}
+function updCad(){
+  const on=Device.state==='on',rpm=on&&Device.rpm?Device.rpm:0,now=performance.now();
+  if(on&&Device.power>0){const pc=Device.power/S.settings.ftp*100;
+    if(play.cadP==null)play.cadP=pc;else play.cadP+=(pc-play.cadP)*(1-Math.exp(-(now-play.cadT)/6000));
+    play.cadT=now}
+  else play.cadT=now;
+  const seg=$('#cad-arc .hz'),dot=$('#cad-dot');if(!seg||!dot)return;
+  if(rpm<=0){seg.classList.remove('on');dot.style.opacity=0;return}
+  const z=cadZone(play.cadP==null?60:play.cadP),inside=rpm>=z.lo&&rpm<=z.hi;
+  const ang=clamp(-CAD_HALF+(rpm-z.lo)/(z.hi-z.lo)*2*CAD_HALF,ARC_A0,-ARC_A0);
+  seg.classList.toggle('on',inside);
+  const hidden=dot.style.opacity!=='1';dot.style.opacity=1;dot.style.stroke=inside?'#3ecf8e':'#ffb02e';
+  moveDot(dot,ang,hidden);
+}
+function buildArcs(){play.Z=hrZones();buildCad();buildArc('#hr-arc',HRZ_COL,'hz-dot');buildArc('#pw-arc',PWZ_COL,'pw-dot')}
 function updPw(){
   const pw=Device.power!=null&&Device.state==='on'?Device.power:null;
   $('#r-w').textContent=pw!=null?Math.round(pw):'–';
@@ -2304,12 +2336,13 @@ async function askExit(){
   leavePlay();
 }
 const RPE=[['Sehr leicht','Locker, Unterhaltung problemlos'],['Leicht','Entspannt, lange durchzuhalten'],['Mittel','Fordernd, aber gut machbar'],['Hart','Sehr anstrengend, schwere Atmung'],['Maximal','All out – mehr ging nicht']];
-function rpeInput(sm,onChange){
-  delete sm.rpe;                                   // keine Vorauswahl: ohne Eingabe keine Daten
+function rpeInput(sm,onChange,init){
+  if(init==null)delete sm.rpe;else sm.rpe=init;      // keine Vorauswahl: ohne Eingabe keine Daten
   const inp=h('input',{type:'range',class:'rpe unset',min:1,max:5,step:1,value:3,'aria-label':'Gefühlte Anstrengung'});
   const info=h('div',{class:'rpd'},'Wie anstrengend war die Einheit? Slider ziehen.');
   const pick=()=>{sm.rpe=+inp.value;inp.classList.remove('unset');info.replaceChildren(h('b',{},RPE[sm.rpe-1][0]),RPE[sm.rpe-1][1]);onChange&&onChange(true)};
   ['input','change','pointerup'].forEach(ev=>inp.addEventListener(ev,pick));
+  if(init!=null){inp.value=init;inp.classList.remove('unset');info.replaceChildren(h('b',{},RPE[init-1][0]),RPE[init-1][1])}
   return h('div',{style:'margin-top:16px'},inp,h('div',{class:'rpel'},h('span',{},'Locker'),h('span',{},'All out')),info);
 }
 /* Speichern-Button mit 30-s-Countdown; erscheint erst nach der RPE-Auswahl, dann läuft der Balken */
@@ -3052,12 +3085,23 @@ async function openRun(id){
   host.replaceChildren();
   const A=analyzeRun(sm,rec);ld.sm=sm;ld.A=A;ld.ftp=A.ftp;ld.Z=A.Z;ld.maxHr=A.maxHr;
   const kpi=(l,v,u)=>h('div',{class:'kpi'},h('small',{},l),h('b',{},v==null?'–':String(v),v!=null&&u&&h('i',{},u)));
+  const rpeVal=h('b',{},''),paintRpe=()=>{rpeVal.textContent=sm.rpe!=null?`${sm.rpe} / 5`:'–'};paintRpe();
+  const rpeKpi=h('div',{class:'kpi'},h('small',{style:'display:flex;align-items:center;gap:2px'},'Gefühlte Anstrengung',
+    h('button',{type:'button',class:'mini-btn kedit','aria-label':'Gefühlte Anstrengung bearbeiten',html:I('edit',15),onclick:()=>{
+      const tmp={};let m;
+      const ok=h('button',{class:'btn primary',onclick:async()=>{
+        if(tmp.rpe==null){closeModal(m);return}
+        sm.rpe=tmp.rpe;const saved=await runSave(sm,rec||{id:sm.id,cols:REC_COLS,rows:[],blocks:[]});
+        closeModal(m);paintRpe();toast(saved?'Gespeichert':'Speichern fehlgeschlagen')}},'Speichern');
+      m=openModal([h('h3',{},'Gefühlte Anstrengung'),rpeInput(tmp,()=>{},sm.rpe),
+        h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>closeModal(m)},'Abbrechen'),ok)],()=>closeModal(m));
+    }})),rpeVal);
   host.append(h('div',{class:'glass pad'},h('div',{class:'kpis'},
     kpi('Dauer',fmtTime(A.moving||sm.moving||0)),kpi('Arbeit',A.kj,'kJ'),
     kpi('Ø Leistung',A.avgW??sm.avgW,'W'),kpi('NP',A.np,'W'),
     kpi('Max. Leistung',A.maxW??sm.maxW,'W'),kpi('Ø Trittfrequenz',A.avgRpm??sm.avgRpm,'rpm'),
     kpi('Ø Herzfrequenz',A.avgHr??sm.avgHr,'bpm'),kpi('Max. Herzfrequenz',A.maxHr2??sm.maxHr,'bpm'),
-    sm.rpe!=null&&kpi('Gefühlte Anstrengung',`${sm.rpe} / 5`))));
+    rpeKpi)));
   if(!A.rows.length){host.append(h('div',{class:'hint'},'Die Sekundenwerte dieser Einheit sind auf diesem Gerät nicht verfügbar.'))}
   else{
     const R=A.rows;ld.n=R.length;
@@ -3158,11 +3202,13 @@ function paintLd(T){
   for(let t=0;t<=n;t+=xs){const x=X(t,n);g.fillText(t===0?'0':Math.round(t/60)+' min',Math.min(Math.max(x,L+10),L+pw-12),H-9)}
   const m=Math.max(2,Math.min(n,Math.floor(pw*2)));
   const col=a=>reduceArr(a,m,false),len=Math.min(n,m);
+  const pick=a=>{const n0=a.length;if(n0<=m)return a;const o=new Array(m);for(let j=0;j<m;j++)o[j]=a[Math.min(n0-1,Math.floor((j+.5)*n0/m))];return o};   // Wert aus der Mitte des Intervalls statt Mittelwert -> Sprünge bleiben scharf
   const P=reduceArr(s.p,m,true);g.fillStyle=`rgba(${TC.n},.16)`;
   for(let j=0;j<len;j++)if(P[j]){const x0=X(j,len),x1=X(j+1,len);g.fillRect(x0,Tp,Math.max(1,x1-x0),ph)}
-  if(sh.plan){const G=col(s.g);g.fillStyle=`rgba(${TC.n},.15)`;
+  if(sh.plan){const G=pick(s.g);g.fillStyle=`rgba(${TC.n},.15)`;
     for(let j=0;j<len;){if(G[j]==null){j++;continue}let k=j;while(k<len&&G[k]!=null)k++;
-      g.beginPath();g.moveTo(X(j,len),Y(0));for(let q=j;q<k;q++)g.lineTo(X(q,len),Y(G[q]));g.lineTo(X(k-1,len),Y(0));g.fill();j=k}}
+      /* Treppenform: jeder Wert wird bis zum nächsten Messpunkt waagerecht gehalten, der Wechsel ist senkrecht */
+      g.beginPath();g.moveTo(X(j,len),Y(0));for(let q=j;q<k;q++){g.lineTo(X(q,len),Y(G[q]));g.lineTo(X(q+1,len),Y(G[q]))}g.lineTo(X(k,len),Y(0));g.fill();j=k}}
   g.setLineDash([5,4]);g.strokeStyle=`rgba(${TC.inkr},.35)`;g.lineWidth=1;g.beginPath();g.moveTo(L,Y(ftp));g.lineTo(L+pw,Y(ftp));g.stroke();g.setLineDash([]);
   g.fillStyle=`rgba(${TC.inkr},.55)`;g.textAlign='left';g.fillText('FTP',L+3,Y(ftp)-7);
   const hv=s.h.filter(v=>v!=null),cvv=s.c.filter(v=>v!=null);
@@ -3178,8 +3224,10 @@ function paintLd(T){
     for(let j=0;j<len;j++){const v=C[j];if(v==null){on=false;continue}const x=X(j,len),y=YC(v);on?g.lineTo(x,y):g.moveTo(x,y);on=true}g.stroke()}
   if(sh.w){const Wv=col(s.w),zc=ld.color==='p';
     for(let j=0;j<len-1;j++){const a=Wv[j],b=Wv[j+1];if(a==null||b==null)continue;
-      g.strokeStyle=zc?PWZ_COL[pwrPos((a+b)/2/ftp*100).i]:LDC.w;g.lineWidth=zc?2:1.4;
-      g.beginPath();g.moveTo(X(j,len),Y(a));g.lineTo(X(j+1,len),Y(b));g.stroke()}}
+      g.lineWidth=zc?2:1.4;
+      /* waagerecht auf Höhe von a bis zum nächsten Punkt, dann senkrecht zu b (kein schräges Verbinden) */
+      g.strokeStyle=zc?PWZ_COL[pwrPos(a/ftp*100).i]:LDC.w;g.beginPath();g.moveTo(X(j,len),Y(a));g.lineTo(X(j+1,len),Y(a));g.stroke();
+      if(a!==b){g.strokeStyle=zc?PWZ_COL[pwrPos((a+b)/2/ftp*100).i]:LDC.w;g.beginPath();g.moveTo(X(j+1,len),Y(a));g.lineTo(X(j+1,len),Y(b));g.stroke()}}}
   if(useH&&hv.length){const Hh=col(s.h),zc=ld.color==='h';
     for(let j=0;j<len-1;j++){const a=Hh[j],b=Hh[j+1];if(a==null||b==null)continue;
       g.strokeStyle=zc?Z[hrPos((a+b)/2,Z).i].col:LDC.h;g.lineWidth=zc?2:1.3;
