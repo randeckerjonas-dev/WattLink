@@ -998,6 +998,22 @@ const Cloud={
     try{await this.sdk.au.signOut(this.sdk.auth)}catch(e){}
     this.user=null;this.needSetup=false;['wattlink-setup','wattlink-profile'].forEach(k=>LS(k,null));this.emit();
   },
+  hasGoogle(){return !!(this.user&&(this.user.providerData||[]).some(x=>x.providerId==='google.com'))},
+  googleMail(){const g=this.user&&(this.user.providerData||[]).find(x=>x.providerId==='google.com');return g&&g.email||''},
+  async linkGoogle(){
+    await this.load();const {au}=this.sdk,u=this.user;
+    if(!u)throw{msg:'Nicht angemeldet'};
+    try{await au.linkWithPopup(u,new au.GoogleAuthProvider())}
+    catch(e){
+      const c=e&&e.code;
+      if(c==='auth/popup-blocked'){await au.linkWithRedirect(u,new au.GoogleAuthProvider());return}
+      if(c==='auth/credential-already-in-use')throw{msg:'Dieses Google-Konto gehört schon zu einem anderen WattLink-Konto'};
+      if(c==='auth/provider-already-linked')throw{msg:'Google ist schon verknüpft'};
+      throw this.authErr(e);
+    }
+    try{await this.user.reload()}catch(e){}
+    this.emit();
+  },
   hasPassword(){return !!(this.user&&(this.user.providerData||[]).some(x=>x.providerId==='password'))},
   async changeEmail(email,pw){   // schickt einen Bestätigungslink an die neue Adresse; sie gilt erst nach dem Klick
     await this.reauth(pw);
@@ -1387,7 +1403,7 @@ function categoryDialog(ex){
 
 /* Eingabefeld mit Icon, Passwort-Auge und Hinweis-/Fehlerzeile (Auth-Seite und Dialoge) */
 function authField({label,icon,type='text',ph,ac,eye,prefix,hint}){
-  const inp=h('input',{type,placeholder:ph||'',autocomplete:ac||'off',autocapitalize:'none',autocorrect:'off',spellcheck:'false','aria-label':label});
+  const inp=h('input',{type,placeholder:'',autocomplete:ac||'off',autocapitalize:'none',autocorrect:'off',spellcheck:'false','aria-label':label});
   const box=h('div',{class:'afi glass'},ic(icon,20),prefix&&h('span',{class:'afp'},prefix),inp);
   if(eye){
     const b=h('button',{type:'button',class:'eye','aria-label':'Passwort anzeigen',html:I('eye',20),onclick:()=>{
@@ -2480,7 +2496,7 @@ function buildAuth(mode){
     return okR;   // nicht prüfbar (offline/Regeln): serverseitig geprüft
   };
   const addUser=()=>{
-    const f=add('username',{label:'Benutzername',icon:'at',ph:'z. B. jonas',ac:'username',prefix:'@'},cUser);
+    const f=add('username',{label:'Benutzername',icon:'at',ph:'z. B. jonas',ac:'username'},cUser);
     f.onInput=()=>{
       const l=f.inp.value.toLowerCase();if(l!==f.inp.value)f.inp.value=l;
       const v=f.inp.value;clearTimeout(uTimer);++uSeq;
@@ -2502,7 +2518,7 @@ function buildAuth(mode){
     });
     submit.disabled=busy||!all;if(gbtn)gbtn.disabled=busy;
   };
-  const setBusy=(b,btn=submit)=>{busy=b;busyBtn=b?btn:null;btn.classList.toggle('busy',b);refresh()};
+  const setBusy=(b,btn=submit)=>{busy=b;busyBtn=b?btn:null;submit.classList.remove('busy');if(gbtn)gbtn.classList.remove('busy');if(b)btn.classList.add('busy');refresh()};   // beim Beenden beide Buttons zurücksetzen (Google-Spinner blieb sonst hängen)
   const val=k=>F[k].inp.value;
   const run=async()=>{
     if(busy||submit.disabled)return;
@@ -2574,6 +2590,15 @@ function buildEditProfile(){
   const nref=wire([nf],nb);
   nb.onclick=()=>withBusy(nb,async()=>{try{await Cloud.updateName(nf.inp.value.trim());toast('Name gespeichert')}catch(e){toast(e.msg||'Fehler')}nref()});
   host.append(card('Profil',nf.root,h('div',{class:'srow',style:'margin:0 0 14px'},h('b',{},'Benutzername'),h('span',{},'@'+P.username)),nb));
+  /* Google-Konto nachträglich verknüpfen */
+  {
+    const linked=Cloud.hasGoogle(),gm=Cloud.googleMail();
+    const gb=h('button',{type:'button',class:'btn wfull gbtn'},h('span',{html:GLOGO,style:'display:flex'}),'Mit Google verknüpfen');
+    gb.onclick=()=>withBusy(gb,async()=>{try{await Cloud.linkGoogle();toast('Google-Konto verknüpft');buildEditProfile()}catch(e){if(!e.silent)toast(e.msg||'Fehler')}});
+    host.append(card('Google-Konto',linked
+      ?h('div',{class:'srow',style:'margin:0'},h('b',{},'Verknüpft'),h('span',{},gm||'Google'))
+      :h('div',{},h('div',{class:'hint',style:'margin:0 0 12px'},'Verknüpfe dein Google-Konto, um dich künftig auch mit Google anzumelden.'),gb)));
+  }
   if(!pwUser){
     host.append(card('E-Mail und Passwort',h('div',{class:'hint',style:'margin:0'},'Du bist mit Google angemeldet. E-Mail-Adresse und Passwort verwaltest du bei Google.')));
     return;
