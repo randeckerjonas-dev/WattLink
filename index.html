@@ -198,6 +198,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .popi{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:0;background:none;border-radius:16px;font-size:15px;color:var(--ink);text-align:left}
 .popi:active{background:rgba(var(--a2r),.12)}
 .popi .ic{color:var(--a2)}
+.popi.danger,.popi.danger .ic{color:#f43f5e}
 .profh{display:flex;align-items:center;gap:14px;margin-bottom:12px}
 .profh .avatar{width:64px;height:64px}
 .fab{width:68px;height:56px;border-radius:20px;display:grid;place-items:center;color:var(--a2);padding:0;transition:transform .15s,opacity .2s}
@@ -237,6 +238,19 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .hint{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:10px 0}
 .sub{margin:18px 2px 8px;font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink3)}
 .prev{margin:14px 0}
+.tres{padding:16px;margin-bottom:12px}
+.tres.ok{background:linear-gradient(135deg,rgba(37,183,166,.38),rgba(79,124,255,.22));border-color:rgba(37,183,166,.55)}
+.tres.bad{background:linear-gradient(135deg,rgba(244,63,94,.3),rgba(255,159,67,.2));border-color:rgba(244,63,94,.5)}
+.trh{display:flex;align-items:center;gap:8px;font-size:14px}.trh .ic{color:var(--ink2)}
+.trh em{margin-left:auto;font-style:normal;font-size:12px;padding:3px 11px;border-radius:99px;background:rgba(var(--wr),.6)}
+.trv{display:flex;align-items:baseline;gap:6px;margin:10px 0 4px}.trv b{font-size:48px;font-weight:300;line-height:1}.trv i{font-style:normal;font-size:18px;color:var(--ink2)}
+.trs{font-size:13px;color:var(--ink2);margin-top:3px}.trw{font-size:14px;margin-top:10px;line-height:1.45}
+.tres .btn{width:100%;margin-top:14px}
+.tstat.ok span:last-child{color:#139b8c;font-weight:500}.tstat.bad span:last-child{color:#f43f5e;font-weight:500}
+.pwarn{display:flex;align-items:center;margin-top:10px;padding:8px 12px;border-radius:12px;background:rgba(255,159,67,.25);font-size:13.5px}
+.desc{padding:14px 16px;margin-top:14px}.desc .dh{font-size:15px;margin-bottom:4px}
+.dr{display:flex;gap:12px;padding:10px 0}.dr+.dr{border-top:1px solid rgba(var(--n),.1)}
+.dr .ic{flex:none;margin-top:2px;color:var(--ink2)}.dr b{display:block;font-weight:500;font-size:14px;margin-bottom:2px}.dr span{display:block;font-size:13px;color:var(--ink2);line-height:1.45}
 .prev.pad{padding:14px 12px 12px}
 .prevsum{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;margin-top:10px;padding-top:10px;border-top:1px solid rgba(var(--n),.12)}
 .prevsum>div{display:flex;flex-direction:column;align-items:center;min-width:0}
@@ -526,7 +540,6 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
     </header>
     <div class="scroll" id="cr-body"></div>
     <div class="fabs">
-      <button class="fab glass danger" id="btn-delete" data-i="trash" data-s="26" aria-label="Löschen"></button>
       <button class="fab glass primary" id="btn-save" data-i="check" data-s="28" aria-label="Speichern"></button>
     </div>
   </section>
@@ -548,6 +561,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
       <div class="glass info" id="p-info"></div>
       <div class="tiles" id="p-tiles"></div>
       <div class="legend" id="p-legend"></div>
+      <div class="glass desc" id="p-desc" style="display:none"></div>
     </div>
     <div class="fabs">
       <button class="fab glass primary" id="btn-play" data-i="play" data-s="28" aria-label="Starten"></button>
@@ -567,6 +581,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
       <div class="glass bcard">
         <div class="brow"><div class="bl" id="pl-label"></div><div class="bt" id="pl-rem"></div></div>
         <div class="prog"><i id="pl-prog"></i></div>
+        <div class="pwarn" id="pl-warn" style="display:none"><span></span></div>
       </div>
       <div class="chartwrap"><div class="glass chart" id="pl-chart"></div><button type="button" class="chip plhr" id="pl-hr" aria-label="Herzfrequenz im Diagramm anzeigen" aria-pressed="false" data-i="heart" data-s="22"></button>
       <div class="glass ldwg bw" id="pl-info"></div></div>
@@ -711,6 +726,7 @@ const PATHS={
   eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
   eyeoff:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 4l16 16"/>',
   target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".9"/>',
+  flag:'<path d="M5.5 21V3.8M5.5 4.5h12.2l-2.6 4 2.6 4H5.5"/>',
   layers:'<path d="M12 3.5l8.5 4.5-8.5 4.5L3.5 8z"/><path d="M3.5 12.2L12 16.7l8.5-4.5M3.5 16.2L12 20.7l8.5-4.5"/>',
   clock:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
   log:'<path d="M6 4h11a1 1 0 0 1 1 1v15H7a1 1 0 0 1-1-1V4zM6 17h12M9.5 8h5M9.5 11.5h5"/>',
@@ -765,7 +781,9 @@ function seed(){
   const iv=o=>({type:'intervals',iv:Object.assign(newProgram().main.iv,o)});
   const ramp=mk('FTP Rampentest','test',{type:'manual',blocks:Array.from({length:25},(_,k)=>({dur:60,p0:50+5*k,p1:50+5*k}))},300,300);
   ramp.warmup.mode='manual';ramp.warmup.blocks=[{dur:300,p0:40,p1:50}];
+  ramp.std='ftp';
   const hfTest=mk('Test max. Herzfrequenz','test',{type:'manual',blocks:[{dur:180,p0:90,p1:90},...Array.from({length:10},(_,k)=>({dur:60,p0:95+5*k,p1:95+5*k}))]},600,600);
+  hfTest.std='hr';
   return{settings:defaults(),categories:cats,programs:[
     mk("5 × 4' VO2max",'vo2',iv({reps:5,onDur:240,onPct:110,offDur:240,offPct:50}),720,480),
     mk("3 × 10' Schwelle",'thr',iv({reps:3,onDur:600,onPct:95,offDur:300,offPct:55}),900,480),
@@ -774,9 +792,19 @@ function seed(){
     ramp,hfTest
   ]};
 }
+/* Standard-Tests (FTP-Rampentest, Maximalpuls-Test): nicht löschbar – fehlen sie, werden sie wiederhergestellt */
+function ensureStd(st){
+  const sd=seed().programs;
+  [['ftp','FTP Rampentest'],['hr','Test max. Herzfrequenz']].forEach(([k,nm])=>{
+    const p=st.programs.find(x=>x.std===k)||st.programs.find(x=>x.name===nm&&x.category==='test');
+    if(p){p.std=k;return}
+    if(!st.categories.some(c=>c.id==='test'))st.categories.push({id:'test',name:'Leistungstests',color:'#25b7a6'});
+    st.programs.push(sd.find(x=>x.std===k));
+  });
+}
 function load(){
   try{const j=JSON.parse(localStorage.getItem(KEY));
-    if(j&&Array.isArray(j.programs)){j.settings=Object.assign(defaults(),j.settings);j.categories=j.categories||[];return j}}catch(e){}
+    if(j&&Array.isArray(j.programs)){j.settings=Object.assign(defaults(),j.settings);j.categories=j.categories||[];ensureStd(j);return j}}catch(e){}
   return seed();
 }
 function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('wattlink',2);
@@ -1064,7 +1092,7 @@ const Cloud={
   apply(r){
     const j=this.parse(r);if(!j)return;
     if(play.running){this.pending=r;return}
-    this.pending=null;{const k=S.settings&&S.settings.spId;S=j;if(k&&!(S.settings&&S.settings.spId)){S.settings=S.settings||{};S.settings.spId=k}}persistLocal();applyAppearance();this.refreshUI();
+    this.pending=null;{const k=S.settings&&S.settings.spId;S=j;ensureStd(S);if(k&&!(S.settings&&S.settings.spId)){S.settings=S.settings||{};S.settings.spId=k}}persistLocal();applyAppearance();this.refreshUI();
   },
   refreshUI(){if(TABS.includes(cur()))render()},
   async start(){
@@ -1350,6 +1378,7 @@ const sum=bl=>bl.reduce((a,b)=>a+b.dur,0);
 function avgPct(bl,total){return total?bl.reduce((a,b)=>a+b.dur*(b.p0+b.p1)/2,0)/total:0}
 const bname=b=>b.name||b.label;
 function blockIndexAt(bl,t){for(let i=bl.length-1;i>=0;i--)if(t>=bl[i].t0)return i;return 0}
+const planAt=(b,t)=>{const p0=b.o0??b.p0,p1=b.o1??b.p1;return p0+(p1-p0)*clamp((t-b.t0)/b.dur,0,1)};   // ursprünglicher Plan, ohne manuelle Anpassung
 const powerAt=(b,t)=>b.p0+(b.p1-b.p0)*clamp((t-b.t0)/b.dur,0,1);
 const blockColor=b=>PWZ_COL[zoneOf(b)];
 
@@ -1477,7 +1506,7 @@ function popMenu(anchor,items){
   closePop();
   const r=anchor.getBoundingClientRect();
   const el=h('div',{class:'pop glass',style:`top:${Math.round(r.bottom+8)}px;right:${Math.max(10,Math.round(innerWidth-r.right))}px`},
-    ...items.map(it=>h('button',{type:'button',class:'popi',onclick:()=>{closePop();it.fn()}},ic(it.icon,20),it.label)));
+    ...items.map(it=>h('button',{type:'button',class:'popi'+(it.danger?' danger':''),onclick:()=>{closePop();it.fn()}},ic(it.icon,20),it.label)));
   el._a=anchor;document.body.append(el);popEl=el;
 }
 document.addEventListener('pointerdown',e=>{if(popEl&&!popEl.contains(e.target)&&!e.target.closest('[data-pop]'))closePop()},true);
@@ -2026,13 +2055,6 @@ $('#btn-save').addEventListener('click',()=>{
   i>=0?S.programs[i]=copy:S.programs.push(copy);
   save();cr.dirty=false;toast('Gespeichert');replaceTop('program',{id:d.id});
 });
-$('#btn-delete').addEventListener('click',async()=>{
-  const exists=S.programs.some(p=>p.id===cr.draft.id);
-  const ok=await confirmDialog({title:exists?'Programm löschen?':'Entwurf verwerfen?',text:exists?`„${cr.draft.name||'Unbenannt'}“ wird endgültig gelöscht.`:'Das neue Programm wird nicht gespeichert.',ok:exists?'Löschen':'Verwerfen',danger:true});
-  if(!ok)return;
-  if(exists){S.programs=S.programs.filter(p=>p.id!==cr.draft.id);save()}
-  cr.dirty=false;resetHome();toast(exists?'Programm gelöscht':'Verworfen');
-});
 
 /* ───────── Programm-Seite ───────── */
 const pg={p:null,blocks:[],total:0,cat:C.none,t:null};
@@ -2044,13 +2066,33 @@ V.program={
     const cat=catOf(p);$('#p-cat').innerHTML=cat?`<i class="cd" style="background:${cat.color}"></i>${cat.name}`:'';
     const work=c.blocks.filter(b=>b.phase==='main'&&b.kind!=='recovery').reduce((a,b)=>a+b.dur,0);
     const avg=avgPct(c.blocks,c.total);
-    $('#p-tiles').innerHTML=[[fmtMin(c.total),'Gesamtdauer'],[`${Math.round(avg)} %`,`Ø ${W(avg)} W`],[fmtMin(work),'Belastung']].map(([v,l])=>`<div class="glass tile"><div class="tv">${v}</div><div class="tl">${l}</div></div>`).join('');
+    $('#p-tiles').innerHTML=[[(p.std?'≥ ':'')+fmtMin(c.total),p.std?'Mindestdauer':'Gesamtdauer'],[`${Math.round(avg)} %`,`Ø ${W(avg)} W`],[fmtMin(work),'Belastung']].map(([v,l])=>`<div class="glass tile"><div class="tv">${v}</div><div class="tl">${l}</div></div>`).join('');
     const zs=[...new Set(c.blocks.map(zoneOf))].sort((a,b)=>a-b);   // Legende: nur die im Programm vorkommenden Leistungszonen
     $('#p-legend').innerHTML=zs.map(z=>`<span><i style="background:${PWZ_COL[z]}"></i>Z${z+1} ${PWZ_NAMES[z]}</span>`).join('');
     drawProg();
+    drawDesc(p);
   },
   redraw(){drawProg()}
 };
+/* Kurzbeschreibung der Standard-Tests (Programmseite) */
+const STD_INFO={
+  ftp:[['play','Ablauf','Nach dem Aufwärmen steigt die Leistung jede Minute um 5 % deines FTP. Du trittst so lange wie möglich, dann tippst du auf die Flagge. Danach folgt das Abwärmen.'],
+       ['target','Auswertung','Deine beste Minute (MAP) × 75 % ergibt deinen FTP. Du siehst das Ergebnis oben in der Aktivitätsanalyse und kannst es dort übernehmen.'],
+       ['ramp','Offenes Ende','Die Rampe ist nach oben offen: Sie steigt weiter, auch über die geplante Länge hinaus, bis du aufgibst. Das Diagramm wächst dabei mit.'],
+       ['pause','Keine Pause','Nicht pausieren! Mehr als 20 s Pause im Test beenden ihn automatisch. Für ein gültiges Ergebnis sind mindestens 8 min Rampe nötig.'],
+       ['sparkle','Tipp','Ausgeruht starten (kein hartes Training am Vortag), Ventilator an, gleiche Bedingungen wie bei früheren Tests.']],
+  hr:[['play','Ablauf','Nach dem Einfahren steigt die Leistung jede Minute um 5 % deines FTP, bis du nicht mehr kannst. Dann tippst du auf die Flagge. Danach folgt das Abwärmen.'],
+      ['heart','Auswertung','Dein Maximalpuls ist der höchste 5-Sekunden-Mittelwert bis 1 min nach Testende. Du siehst das Ergebnis oben in der Aktivitätsanalyse und kannst es dort übernehmen.'],
+      ['ramp','Offenes Ende','Die Stufen laufen weiter, bis du aufgibst. Gib wirklich alles, am Ende gern ein kurzer Schlusssprint.'],
+      ['pause','Pausen','Eine Pause macht den Test nicht ungültig, aber du erreichst deinen Maximalpuls dann womöglich nicht ganz.'],
+      ['sparkle','Tipp','Brustgurt anlegen, ausgeruht und gesund starten. Bei Herz-Kreislauf-Beschwerden vorher ärztlich abklären.']]
+};
+function drawDesc(p){
+  const el=$('#p-desc'),rows=p&&STD_INFO[p.std];
+  if(!rows){el.style.display='none';return}
+  el.style.display='block';
+  el.replaceChildren(h('div',{class:'dh'},'So funktioniert der Test'),...rows.map(([i,t,x])=>h('div',{class:'dr'},ic(i,20),h('div',{},h('b',{},t),h('span',{},x)))));
+}
 function drawProg(){
   if(!pg.p)return;
   const host=$('#p-chart');
@@ -2096,7 +2138,13 @@ $('#p-fav').addEventListener('click',()=>{
 });
 $('#p-menu').addEventListener('click',e=>popMenu(e.currentTarget,[
   {icon:'edit',label:'Bearbeiten',fn:()=>go('create',{draft:clone(pg.p),isNew:false})},
-  {icon:'download',label:'Herunterladen',fn:downloadProgram}]));
+  {icon:'download',label:'Herunterladen',fn:downloadProgram},
+  ...(pg.p&&pg.p.std?[]:[{icon:'trash',label:'Löschen',danger:true,fn:deleteProgram}])]));
+async function deleteProgram(){
+  const p=pg.p;if(!p||p.std)return;
+  if(!await confirmDialog({title:'Programm löschen?',text:`„${p.name||'Unbenannt'}“ wird endgültig gelöscht.`,ok:'Löschen',danger:true}))return;
+  S.programs=S.programs.filter(x=>x.id!==p.id);save();resetHome();toast('Programm gelöscht');
+}
 $('#btn-play').addEventListener('click',()=>{
   if(play.running){toast('Es läuft bereits ein Training');go('play',{resume:true});return}
   go('play',{id:pg.p.id});
@@ -2118,6 +2166,9 @@ $('#file').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{
     const j=JSON.parse(await f.text()),src=j.program||j;
+    if(j&&j.run&&j.rec&&typeof j.run.id==='string'&&Array.isArray(j.rec.rows)){   // Aktivität (WattLink-JSON) -> Logbuch
+      j.rec.id=j.run.id;const ok=await runSave(j.run,j.rec);toast(ok?'Aktivität ins Logbuch importiert':'Import fehlgeschlagen');return;
+    }
     if(!src||typeof src!=='object'||!src.main)throw new Error('Keine gültige WattLink-Datei');
     const p=normalizeProgram(src);
     let cat=null;const sc=src.category;
@@ -2151,6 +2202,9 @@ V.play={
     play.dragT=null;$('#pl-info').style.display='none';
     Object.assign(play,{p,blocks:clone(c.blocks),total:c.total,i:-1,elapsed:0,paused:false,running:true,finished:false,auto:false,zeroSince:0,devSp:null,devSince:0,spBusy:false,spAt:0,sentW:null,lastSendAt:0,checked:new Set(),ovr:null,bypass:false,secDrawn:-1,beepRem:0,cat:catColor(p),samples:{p:[],h:[]},hrs:[],last:performance.now()});
     if(!play.total){toast('Programm ist leer');play.running=false;history.back();return}
+    Object.assign(play,{std:p.std||null,gaveUp:false,pauseSec:0,endWhy:null});
+    $('#btn-skip').innerHTML=I(play.std?'flag':'skip',26);$('#btn-skip').setAttribute('aria-label',play.std?'Aufgeben':'Überspringen');$('#pl-warn').style.display='none';
+    if(play.std==='hr'&&!Device.hr)toast('Ohne Brustgurt kann kein Maximalpuls bestimmt werden');
     try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume()}catch(e){}
     Device.active=true;acquireWake();
     setPauseIcon();$('#pl-ovr').classList.remove('show');
@@ -2198,6 +2252,11 @@ function tick(){
   autoPause();
   const now=performance.now(),dt=(now-play.last)/1000;play.last=now;
   if(!play.paused)play.elapsed+=dt;
+  if(play.std&&!play.gaveUp){
+    extendOpen();
+    const bb=play.blocks[blockIndexAt(play.blocks,play.elapsed)];
+    if(play.paused&&bb&&bb.phase==='main'){play.pauseSec+=dt;if(play.pauseSec>PAUSE_MAX[play.std]){giveUp('pause');toast('Pause zu lang – Test beendet');return}}
+  }
   if(play.elapsed>=play.total){finishPlay();return}
   const idx=blockIndexAt(play.blocks,play.elapsed);
   if(idx!==play.i)onBlockChange(idx);
@@ -2212,6 +2271,31 @@ function tick(){
     if(sec!==play.samples.last){play.samples.last=sec;if(Device.power!=null)play.samples.p.push(Device.power);if(Device.hr){play.samples.h.push(Device.hr);play.hrs.push([sec,Device.hr])}}
   }
   playUI();updMini();
+}
+/* Standard-Tests: offenes Ende. Im letzten Test-Block wird sofort die nächste Stufe (+5 % FTP, 1 min) angehängt, bis aufgegeben wird. */
+const PAUSE_MAX={ftp:20};   // nur der FTP-Test hat eine Pausengrenze (beim Maximalpuls-Test macht eine Pause nichts ungültig)
+function reindex(){let t=0;play.blocks.forEach((b,i)=>{b.i=i;b.t0=t;t+=b.dur});play.total=t}
+function extendOpen(){
+  const i=blockIndexAt(play.blocks,play.elapsed),b=play.blocks[i];
+  if(!b||b.phase!=='main')return;
+  const nx=play.blocks[i+1];if(nx&&nx.phase==='main')return;
+  const n=play.blocks.filter(x=>x.phase==='main').length+1,pc=Math.min(300,Math.round(b.p1+5));
+  play.blocks.splice(i+1,0,{phase:'main',kind:'interval',dur:60,p0:pc,p1:pc,label:'Interval',name:`Block ${n}`,open:true});
+  reindex();play.secDrawn=-1;
+}
+/* Aufgeben: Rest der Rampe entfällt, der aktuelle Block endet jetzt, danach folgt das Abwärmen */
+function giveUp(why){
+  if(!play.running||!play.std||play.gaveUp)return;
+  const i=blockIndexAt(play.blocks,play.elapsed),b=play.blocks[i];
+  if(b.phase==='cooldown'){finishPlay();return}
+  play.gaveUp=true;play.endWhy=why||'giveup';hideOverride();
+  const ci=play.blocks.findIndex((x,k)=>k>i&&x.phase==='cooldown'),keep=ci<0?play.blocks.length:ci;
+  play.blocks.splice(i+1,keep-(i+1));
+  const used=play.elapsed-b.t0;
+  if(used<1&&i>0)play.blocks.splice(i,1);else b.dur=Math.max(1,Math.round(used));
+  reindex();
+  const e=ci<0?play.total:(play.blocks.find(x=>x.phase==='cooldown')||{t0:play.total}).t0;
+  play.elapsed=e;play.secDrawn=-1;
 }
 function onBlockChange(idx){
   if(play.ovr)play.ovr.carry=true;else hideOverride();   // offene Anpassungsfrage läuft im nächsten Block weiter
@@ -2228,12 +2312,14 @@ function playUI(){
   $('#pl-label').textContent=bname(b)+(play.paused?' · Pause':'');
   $('#pl-rem').textContent=fmtTime(Math.ceil(b.dur-tin));
   $('#pl-name').textContent=play.p.name;
-  const es=Math.floor(t);$('#pl-el').textContent=fmtTime(es);$('#pl-tr').textContent='-'+fmtTime(Math.max(0,Math.round(play.total)-es));
+  const es=Math.floor(t);$('#pl-el').textContent=fmtTime(es);$('#pl-tr').textContent=play.std&&!play.gaveUp?'offen':'-'+fmtTime(Math.max(0,Math.round(play.total)-es));
+  const wn=$('#pl-warn');
+  if(play.std&&PAUSE_MAX[play.std]&&!play.gaveUp&&play.paused&&b.phase==='main'){wn.style.display='flex';wn.firstChild.textContent=`Pause – Test endet in ${Math.max(0,Math.ceil(PAUSE_MAX[play.std]-play.pauseSec))} s`}else wn.style.display='none';
   updPw();
   $('#r-c').textContent=Device.rpm!=null&&Device.state==='on'?Device.rpm:'–';
   updCad();
   updHr();
-  const nx=nextPhaseStart();$('#btn-skip').classList.toggle('off',nx==null);
+  const nx=nextPhaseStart();$('#btn-skip').classList.toggle('off',play.std?play.gaveUp:nx==null);
   const fr=Device.fresh(),ics=$$('.rings .ring>span');   // Symbole pulsieren nur, solange der jeweilige Wert wirklich ankommt
   ics[0].classList.toggle('live',fr&&Device.power!=null);ics[1].classList.toggle('live',fr&&Device.rpm!=null);ics[2].classList.toggle('live',fr&&!!Device.hr);
   Music.tick();
@@ -2242,7 +2328,7 @@ function playUI(){
 function drawPlayChart(){
   const tc=play.dragT!=null?play.dragT:play.elapsed;
   drawChart($('#pl-chart'),play.blocks,play.total,{h:190,cat:play.cat,active:blockIndexAt(play.blocks,tc),cursorT:tc,
-    prog:`${Math.floor(play.elapsed/60)}/${Math.round(play.total/60)} min`,progDx:0,dimAll:play.showHr,hrs:play.showHr?play.hrs:null,hrZ:play.Z});
+    prog:play.std&&!play.gaveUp?`${Math.floor(play.elapsed/60)} min`:`${Math.floor(play.elapsed/60)}/${Math.round(play.total/60)} min`,progDx:0,dimAll:play.showHr,hrs:play.showHr?play.hrs:null,hrZ:play.Z});
 }
 $('#pl-hr').addEventListener('click',()=>{play.showHr=!play.showHr;$('#pl-hr').classList.toggle('sel',play.showHr);$('#pl-hr').setAttribute('aria-pressed',play.showHr);drawPlayChart()});
 (()=>{
@@ -2267,7 +2353,7 @@ function updMini(){
   const b=play.blocks[play.i];if(!b)return;
   $('#mp-label').textContent=bname(b)+(play.paused?' · Pause':'');
   $('#mp-rem').textContent=fmtTime(Math.ceil(b.dur-(play.elapsed-b.t0)));
-  $('#mp-sub').textContent=`${play.p.name} · ${Math.floor(play.elapsed/60)}/${Math.round(play.total/60)} min`;
+  $('#mp-sub').textContent=`${play.p.name} · ${Math.floor(play.elapsed/60)}${play.std&&!play.gaveUp?'':'/'+Math.round(play.total/60)} min`;
 }
 /* Zonenbogen: 5 gleich lange Segmente über 280° (unten offen); Punkt = aktuelle HF innerhalb ihrer Zone */
 const ARC_A0=-140;
@@ -2345,8 +2431,15 @@ function updHr(){
 function nextPhaseStart(){const ph=play.blocks[play.i]&&play.blocks[play.i].phase;for(let j=play.i+1;j<play.blocks.length;j++)if(play.blocks[j].phase!==ph)return j;return null}
 function setPauseIcon(){$('#btn-pause').innerHTML=I(play.paused?'play':'pause',play.paused?28:26)}
 $('#btn-pause').addEventListener('click',()=>setPaused(!play.paused,false));
+async function askGiveUp(){
+  if(!play.running||play.gaveUp)return;
+  const ok=await confirmDialog({title:'Test beenden?',text:'Der Test endet jetzt und das Abwärmen startet.',ok:'Aufgeben',cancel:'Weiter fahren',danger:true});
+  if(!ok||!play.running||play.gaveUp)return;
+  vib(80);giveUp('giveup');tick();
+}
 $('#btn-skip').addEventListener('click',()=>{
   if(!play.running)return;
+  if(play.std){askGiveUp();return}
   const jb=play.i+1<play.blocks.length?play.i+1:null,jp=nextPhaseStart();
   if(jb==null)return;
   let m;
@@ -2368,19 +2461,43 @@ function recTick(){
   const on=Device.state==='on',b=play.blocks[play.i];
   play.rec.push([Math.round((Date.now()-play.startedAt)/1000),Math.round(play.elapsed),
     on&&Device.power!=null?Math.round(Device.power):null,on&&Device.rpm!=null?Math.round(Device.rpm):null,on&&Device.hr?Math.round(Device.hr):null,
-    play.paused||!b?null:snap5(powerAt(b,play.elapsed)/100*S.settings.ftp),play.paused?1:0]);
+    play.paused||!b?null:snap5(planAt(b,play.elapsed)/100*S.settings.ftp),play.paused?1:0]);
 }
 function buildRun(status){
   const rows=play.rec,act=rows.filter(r=>!r[6]);
   const col=(i,minV)=>act.map(r=>r[i]).filter(v=>v!=null&&v>=minV);
   const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null,max=a=>a.length?Math.max(...a):null;
   const w=col(2,0),hr=col(4,1),c=col(3,0);
-  return{id:uid(),start:play.startedAt,end:Date.now(),name:play.p.name,progId:play.p.id,color:play.cat,status,
+  const sm={id:uid(),start:play.startedAt,end:Date.now(),name:play.p.name,progId:play.p.id,color:play.cat,status,
     planned:Math.round(play.total),elapsed:Math.round(play.elapsed),moving:act.length,n:rows.length,ftp:S.settings.ftp,hrMax:S.settings.maxHr,lthr:lthr(),
     avgW:avg(w),maxW:max(w),avgHr:avg(hr),maxHr:max(hr),avgRpm:avg(c)};
+  if(play.std)sm.test={kind:play.std,pause:Math.round(play.pauseSec),end:play.endWhy||(status==='completed'?'done':'abort')};
+  return sm;
+}
+/* Testergebnis aus den Sekundenwerten. FTP-Rampentest: FTP = 75 % der besten 60-s-Durchschnittsleistung (MAP), mind. 8 min Rampe.
+   Maximalpuls-Test: höchster 5-s-Mittelwert der HF vom Teststart bis 1 min nach Testende (die HF läuft der Leistung nach), mind. 4 min Test. */
+function testResult(sm,rows,blocks){
+  const t=sm&&sm.test;if(!t)return null;
+  const ms=(blocks||[]).filter(b=>b.phase==='main');
+  if(!ms.length||!rows||!rows.length)return{kind:t.kind,valid:false,why:'Die Sekundenwerte dieser Einheit sind nicht verfügbar.'};
+  const m0=ms[0].t0,m1=ms[ms.length-1].t0+ms[ms.length-1].dur,inMain=r=>r[1]>=m0&&r[1]<m1;
+  const dur=rows.filter(r=>inMain(r)&&!r[6]).length;
+  const roll=(vals,n)=>{let best=0;const ps=[0],pc=[0];vals.forEach((v,i)=>{ps.push(ps[i]+(v||0));pc.push(pc[i]+(v!=null?1:0))});
+    for(let i=n;i<=vals.length;i++)if(pc[i]-pc[i-n]===n)best=Math.max(best,(ps[i]-ps[i-n])/n);return best};
+  if(t.kind==='ftp'){
+    if(dur<480)return{kind:'ftp',valid:false,dur,why:`Test zu früh beendet: Für ein gültiges Ergebnis sind mindestens 8 min Rampe nötig (hier ${fmtTime(dur)}).`};
+    const map=roll(rows.map(r=>inMain(r)&&!r[6]&&r[2]!=null?r[2]:null),60);
+    if(!map)return{kind:'ftp',valid:false,dur,why:'Keine zusammenhängende Minute mit Leistungsdaten.'};
+    return{kind:'ftp',valid:true,dur,map:Math.round(map),val:Math.round(map*.75)};
+  }
+  if(dur<240)return{kind:'hr',valid:false,dur,why:`Test zu früh beendet: Mindestens 4 min Test nötig (hier ${fmtTime(dur)}).`};
+  const mx=roll(rows.map(r=>r[1]>=m0&&r[1]<m1+60&&r[4]?r[4]:null),5);
+  if(!mx)return{kind:'hr',valid:false,dur,why:'Keine Herzfrequenz aufgezeichnet (Brustgurt verbunden?).'};
+  if(mx<100||mx>230)return{kind:'hr',valid:false,dur,why:`Unplausibler Wert (${Math.round(mx)} bpm).`};
+  return{kind:'hr',valid:true,dur,val:Math.round(mx)};
 }
 async function storeRun(sm){
-  const ok=await runSave(sm,{id:sm.id,cols:REC_COLS,rows:play.rec,blocks:clone(play.blocks)});
+  const ok=await runSave(sm,{id:sm.id,cols:REC_COLS,rows:play.rec,blocks:clone(play.blocks).map(b=>{if(b.o0!=null){b.p0=b.o0;b.p1=b.o1}delete b.o0;delete b.o1;return b})});
   toast(ok?'Einheit im Logbuch gespeichert':'Speichern fehlgeschlagen');
 }
 /* gespeichert wird ab 5 Min. Fahrzeit gefragt – im Demo-Modus immer */
@@ -2434,6 +2551,7 @@ function finishPlay(){
   const okBtn=h('button',{class:'btn primary',onclick:()=>done(true)},h('span',{},'Speichern'));
   m=openModal([h('h3',{},'Geschafft!'),h('p',{},play.p.name),
     h('div',{class:'stat'},h('span',{},'Dauer'),h('span',{},fmtTime(play.total))),
+    ...(()=>{const tr=sm.test&&testResult(sm,play.rec,play.blocks);return tr?[h('div',{class:'stat tstat '+(tr.valid?'ok':'bad')},h('span',{},tr.kind==='ftp'?'FTP-Ergebnis':'Max. Herzfrequenz'),h('span',{},tr.valid?`${tr.val} ${tr.kind==='ftp'?'W':'bpm'}`:'ungültig'))]:[]})(),
     sm.avgW!=null&&h('div',{class:'stat'},h('span',{},'Ø Leistung'),h('span',{},`${sm.avgW} W · ${Math.round(sm.avgW/S.settings.ftp*100)} % FTP`)),
     sm.avgHr!=null&&h('div',{class:'stat'},h('span',{},'Ø Herzfrequenz'),h('span',{},`${sm.avgHr} bpm`)),
     ...(canAsk(sm)   // erst ab 5 Minuten Fahrzeit (Demo-Modus: immer) wird zum Speichern gefragt
@@ -2477,6 +2595,8 @@ $('#ovr-yes').addEventListener('click',()=>{
   const o=play.ovr;if(!o)return;
   const b=play.blocks[o.i],ratio=o.sp/o.from,z=zoneOf(b),ramp=b.p0!==b.p1;
   let n=0;
+  const keep=x=>{if(x.o0==null){x.o0=x.p0;x.o1=x.p1}};   // ursprünglich geplante Leistung merken (für die Analyse)
+  keep(b);play.blocks.forEach(x=>{if(x.i>o.i&&zoneOf(x)===z)keep(x)});
   play.blocks.forEach(x=>{if(x.i>o.i&&zoneOf(x)===z){x.p0=f1(x.p0*ratio);x.p1=f1(x.p1*ratio);n++}});
   if(ramp){b.p0=f1(b.p0*ratio);b.p1=f1(b.p1*ratio)}                            // Rampe: ganze Rampe hoch/runter skalieren
   else b.p0=b.p1=f1(o.sp/S.settings.ftp*100);
@@ -3146,6 +3266,22 @@ function analyzeRun(sm,rec){
   return{rows,ftp,maxHr,Z,pz,hz,moving:act.length,avgW:avg(w),maxW:max(w),np:normPower(w),kj:w.length?Math.round(w.reduce((a,b)=>a+b,0)/1000):null,
     avgHr:avg(hr),maxHr2:max(hr),avgRpm:avg(c),hasHr:hr.length>0};
 }
+/* Ergebnis-Karte ganz oben (Standard-Tests): farbig hervorgehoben, Ergebnis lässt sich als neuer FTP / Maximalpuls übernehmen */
+function testCard(sm,R,rec){
+  const ftp=R.kind==='ftp',unit=ftp?'W':'bpm',card=h('div',{class:'glass tres '+(R.valid?'ok':'bad')});
+  card.append(h('div',{class:'trh'},ic(ftp?'bolt':'heart',20),h('span',{},ftp?'FTP-Rampentest':'Maximalpuls-Test'),h('em',{},R.valid?'gültig':'ungültig')));
+  if(!R.valid){card.append(h('div',{class:'trw'},R.why));return card}
+  const was=(ftp?sm.ftp:sm.hrMax)||(ftp?S.settings.ftp:S.settings.maxHr),d=R.val-was;
+  card.append(h('div',{class:'trv'},h('b',{},String(R.val)),h('i',{},unit)),
+    h('div',{class:'trs'},d===0?`Unverändert gegenüber bisher (${was} ${unit})`:`${d>0?'+':''}${d} ${unit} (${d>0?'+':''}${Math.round(d/was*1000)/10} %) gegenüber bisher (${was} ${unit})`),
+    h('div',{class:'trs'},ftp?`Beste Minute (MAP) ${R.map} W × 75 %`:'Höchster 5-Sekunden-Mittelwert'),
+    ...[sm.test.pause>0?h('div',{class:'trs'},`Pause im Test: ${sm.test.pause} s`):null,
+      sm.test.end==='pause'?h('div',{class:'trs'},'Test durch zu lange Pause beendet'):null].filter(Boolean));
+  const cur=()=>ftp?S.settings.ftp:S.settings.maxHr,btn=h('button',{type:'button',class:'btn primary'},'');
+  const paint=()=>{const same=cur()===R.val;btn.textContent=same?(ftp?'Als FTP übernommen':'Als Maximalpuls übernommen'):(ftp?'Als neuen FTP übernehmen':'Als neuen Maximalpuls übernehmen');btn.disabled=same;btn.style.opacity=same?.6:1};
+  btn.onclick=async()=>{if(ftp)S.settings.ftp=R.val;else S.settings.maxHr=R.val;save();sm.test.applied=true;rec?await runSave(sm,rec):await runPutSum(sm);paint();toast(ftp?'FTP aktualisiert':'Maximalpuls aktualisiert')};
+  paint();card.append(btn);return card;
+}
 async function openRun(id){
   const host=$('#logd-body');host.replaceChildren();ld.cur=null;ld.id=id;
   const sm=(await runList()).find(r=>r.id===id);
@@ -3171,6 +3307,7 @@ async function openRun(id){
       m=openModal([h('h3',{},'Gefühlte Anstrengung'),rpeInput(tmp,()=>{},sm.rpe),
         h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>closeModal(m)},'Abbrechen'),ok)],()=>closeModal(m));
     }})),rpeVal);
+  if(sm.test)host.append(testCard(sm,testResult(sm,A.rows,rec&&rec.blocks),rec));
   host.append(h('div',{class:'glass pad'},h('div',{class:'kpis'},
     kpi('Dauer',fmtTime(A.moving||sm.moving||0)),kpi('Arbeit',A.kj,'kJ'),
     kpi('Ø Leistung',A.avgW??sm.avgW,'W'),kpi('NP',A.np,'W'),
@@ -3216,10 +3353,6 @@ async function openRun(id){
       h('div',{class:'bv'},h('div',{},x.w!=null?`${x.w} W`:'–'),h('small',{},x.w!=null?`${Math.round(x.w/A.ftp*100)} %`:'')),
       h('div',{class:'bh'},x.hr!=null?`${x.hr} bpm`:'–')))));
   }
-  host.append(h('div',{style:'margin-top:22px;display:flex'},h('button',{class:'glass',type:'button','aria-label':'Einheit löschen',html:I('trash',24),style:'flex:1;height:54px;border-radius:18px;color:#f43f5e;display:grid;place-items:center;padding:0',onclick:async()=>{
-    if(!await confirmDialog({title:'Einheit löschen?',text:`„${sm.name}“ vom ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} wird endgültig gelöscht${Cloud.name()?' (auch im Konto)':''}.`,ok:'Löschen',danger:true}))return;
-    await runDelete(id);Cloud.deleteRun(id);toast('Einheit gelöscht');history.back();
-  }})));
 }
 /* Tippen außerhalb des Diagramms blendet Strich, Punkte und Widget aus */
 document.addEventListener('pointerdown',e=>{
@@ -3351,9 +3484,82 @@ function paintLd(T){
   wg.style.display=T.full?'flex':'block';wg.style.right='';
   const ww=wg.offsetWidth;wg.style.left=clamp(x-ww/2,0,Math.max(0,Wd-ww))+'px';
 }
-/* Aktivitäts-Menü: Logik folgt später */
+/* ───────── Aktivitäts-Menü: Umbenennen, Herunterladen (FIT / JSON), Teilen, Löschen ───────── */
+async function renameRun(){
+  const sm=ld.sm;if(!sm)return;
+  const r=await inputDialog({title:'Umbenennen',fields:[{label:'Name',icon:'edit',value:sm.name,check:v=>!v?'Bitte einen Namen eingeben':v.length>60?'Maximal 60 Zeichen':null}],ok:'Speichern'});
+  if(!r||r[0]===sm.name)return;
+  sm.name=r[0];const rec=await runGet(sm.id);
+  const ok=rec?await runSave(sm,rec):await runPutSum(sm);
+  $('#logd-title').textContent=sm.name;toast(ok?'Umbenannt':'Speichern fehlgeschlagen');
+}
+async function deleteRunUI(){
+  const sm=ld.sm;if(!sm)return;const d=new Date(sm.start);
+  if(!await confirmDialog({title:'Einheit löschen?',text:`„${sm.name}“ vom ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} wird endgültig gelöscht${Cloud.name()?' (auch im Konto)':''}.`,ok:'Löschen',danger:true}))return;
+  await runDelete(sm.id);Cloud.deleteRun(sm.id);toast('Einheit gelöscht');history.back();
+}
+function saveBlob(blob,name){
+  const url=URL.createObjectURL(blob),a=h('a',{href:url,download:name});
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function downloadRunDialog(){
+  const sm=ld.sm;if(!sm)return;let m;
+  const pick=f=>{closeModal(m);exportRun(f)};
+  m=openModal([h('h3',{},'Herunterladen'),h('p',{},'Welches Format?'),
+    h('div',{style:'display:flex;flex-direction:column;gap:10px;margin-top:16px'},
+      h('button',{class:'btn primary',style:'width:100%;min-height:56px',onclick:()=>pick('fit')},'FIT – für Strava, Garmin Connect …'),
+      h('button',{class:'btn',style:'width:100%;min-height:56px',onclick:()=>pick('json')},'JSON – WattLink-Sicherung'),
+      h('button',{class:'btn',style:'width:100%;min-height:48px',onclick:()=>closeModal(m)},'Abbrechen'))],()=>closeModal(m));
+}
+async function exportRun(fmt){
+  const sm=ld.sm;if(!sm)return;
+  const rec=await runGet(sm.id);
+  if(!rec||!rec.rows||!rec.rows.length){toast('Die Sekundenwerte sind auf diesem Gerät nicht verfügbar');return}
+  const d=new Date(sm.start),base=`${(sm.name||'Aktivitaet').replace(/[^\w\-äöüÄÖÜß ]+/g,'').trim().replace(/\s+/g,'_')}_${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  if(fmt==='json'){saveBlob(new Blob([JSON.stringify({app:'WattLink',version:1,run:sm,rec},null,1)],{type:'application/json'}),base+'.json');toast('Als JSON heruntergeladen');return}
+  try{saveBlob(new Blob([buildFit(sm,rec)],{type:'application/octet-stream'}),base+'.fit');toast('Als FIT heruntergeladen')}catch(e){toast('FIT-Export fehlgeschlagen')}
+}
+/* FIT-Datei (Garmin-Binärformat) aus den Sekundenwerten: file_id, Timer-Events, record (Leistung, HF, Trittfrequenz je Sekunde), lap, session, activity.
+   Sport: Radfahren / Indoor. Zeiten = Sekunden seit 31.12.1989 UTC. */
+function buildFit(sm,rec){
+  const T0=631065600,tsOf=ms=>Math.max(0,Math.round(ms/1000)-T0);
+  const u8=v=>[v&255],u16=v=>[v&255,(v>>8)&255],u32=v=>[v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255];
+  const TY={u8:[2,1,u8,255],en:[0,1,u8,255],u16:[0x84,2,u16,65535],u32:[0x86,4,u32,4294967295],u32z:[0x8C,4,u32,0]};
+  const crcT=[0,0xCC01,0xD801,0x1400,0xF001,0x3C00,0x2800,0xE401,0xA001,0x6C00,0x7800,0xB401,0x5000,0x9C01,0x8801,0x4400];
+  const crc=(c,arr)=>{for(const b of arr){let t=crcT[c&15];c=(c>>4)&0xFFF;c=c^t^crcT[b&15];t=crcT[c&15];c=(c>>4)&0xFFF;c=c^t^crcT[(b>>4)&15]}return c};
+  const out=[],defs={};
+  const msg=(local,global,fields)=>{
+    if(!defs[local]){out.push(0x40|local,0,0,...u16(global),fields.length);fields.forEach(([n,t])=>out.push(n,TY[t][1],TY[t][0]));defs[local]=1}
+    out.push(local);fields.forEach(([n,t,v])=>out.push(...TY[t][2](v==null||Number.isNaN(v)?TY[t][3]:Math.round(v))));
+  };
+  const A=analyzeRun(sm,rec),rows=rec.rows,tOf=r=>tsOf(sm.start+r[0]*1000);
+  const act=rows.filter(r=>!r[6]);
+  const t0=tOf(rows[0]),t1=tOf(rows[rows.length-1]),elapsed=Math.max(1,t1-t0+1),moving=act.length;
+  msg(0,0,[[0,'en',4],[1,'u16',255],[2,'u16',0],[3,'u32z',1],[4,'u32',tsOf(sm.start)]]);
+  const ev=(t,type)=>msg(2,21,[[253,'u32',t],[0,'en',0],[1,'en',type]]);
+  let run=false;
+  rows.forEach(r=>{
+    const t=tOf(r);
+    if(!r[6]){
+      if(!run){ev(t,0);run=true}
+      msg(1,20,[[253,'u32',t],[7,'u16',r[2]],[3,'u8',r[4]],[4,'u8',r[3]]]);
+    }else if(run){ev(t,4);run=false}
+  });
+  if(run)ev(t1+1,4);
+  const common=[[253,'u32',t1+1],[2,'u32',t0],[7,'u32',elapsed*1000],[8,'u32',moving*1000]];
+  msg(3,19,[...common,[0,'en',9],[1,'en',1],[25,'en',2],[39,'en',6]]);
+  const cad=act.map(r=>r[3]).filter(v=>v!=null);
+  msg(4,18,[...common,[5,'en',2],[6,'en',6],[20,'u16',A.avgW],[21,'u16',A.maxW],[34,'u16',A.np],[16,'u8',A.avgHr],[17,'u8',A.maxHr2],[18,'u8',A.avgRpm],[19,'u8',cad.length?Math.max(...cad):null],
+    [25,'u16',0],[26,'u16',1],[0,'en',8],[1,'en',1]]);
+  msg(5,34,[[253,'u32',t1+1],[0,'u32',moving*1000],[1,'u16',1],[2,'en',0],[3,'en',26],[4,'en',1]]);
+  const head=[14,0x20,...u16(2132),...u32(out.length),0x2E,0x46,0x49,0x54];
+  head.push(...u16(crc(0,head)));
+  const body=head.concat(out);
+  return new Uint8Array(body.concat(u16(crc(0,body))));
+}
 $('#logd-menu').addEventListener('click',e=>popMenu(e.currentTarget,[
-  {icon:'edit',label:'Umbenennen',fn:soon},{icon:'download',label:'Herunterladen',fn:soon},{icon:'share',label:'Teilen',fn:soon}]));
+  {icon:'edit',label:'Umbenennen',fn:renameRun},{icon:'download',label:'Herunterladen',fn:downloadRunDialog},{icon:'share',label:'Teilen',fn:soon},
+  {icon:'trash',label:'Löschen',danger:true,fn:deleteRunUI}]));
 
 /* ───────── Start ───────── */
 $$('[data-i]').forEach(e=>e.innerHTML=I(e.dataset.i,+e.dataset.s||22));
