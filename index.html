@@ -23,13 +23,28 @@
 html,body{height:100%;overflow:hidden}
 body{font-family:'Outfit',Roboto,system-ui,sans-serif;font-weight:300;color:var(--ink);background:var(--bgs);overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;cursor:pointer}
-.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:linear-gradient(170deg,var(--bg1),var(--bg2))}
-.bg i{position:absolute;left:calc(50% - 30vmax);top:calc(50% - 30vmax);width:60vmax;height:60vmax;border-radius:50%;filter:blur(60px) saturate(var(--bgsat));opacity:min(1,calc(.75*var(--bgop)));will-change:transform}
-.bg i:nth-child(1){background:radial-gradient(circle,var(--o1),transparent 68%);animation:orb calc(26s / var(--bgsp)) linear infinite;--d:30vw}
-.bg i:nth-child(2){background:radial-gradient(circle,var(--o2),transparent 68%);animation:orb calc(34s / var(--bgsp)) linear infinite reverse;--d:34vw}
-.bg i:nth-child(3){background:radial-gradient(circle,var(--o3),transparent 68%);animation:orb calc(42s / var(--bgsp)) linear infinite;--d:26vw;animation-delay:-14s}
-.bg i:nth-child(4){background:radial-gradient(circle,var(--o4),transparent 70%);width:40vmax;height:40vmax;left:calc(50% - 20vmax);top:calc(50% - 20vmax);opacity:min(1,calc(.5*var(--bgop)));animation:orb calc(30s / var(--bgsp)) linear infinite reverse;--d:38vw;animation-delay:-9s}
-@keyframes orb{from{transform:rotate(0) translateX(calc(var(--d)*var(--bgmv))) rotate(0)}to{transform:rotate(360deg) translateX(calc(var(--d)*var(--bgmv))) rotate(-360deg)}}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:linear-gradient(170deg,var(--bg1),var(--bg2));filter:saturate(var(--bgsat))}
+/* Mesh-Gradient: 4 riesige Farbfelder mit gaußförmigem Verlauf (ohne erkennbaren Rand), die auf langen, unregelmäßigen Bahnen driften.
+   Kein Blur-Filter nötig; nur transform wird animiert (läuft auf der GPU). */
+.bg i{--c:var(--o1);position:absolute;left:calc(50% - 55vmax);top:calc(50% - 55vmax);width:110vmax;height:110vmax;border-radius:50%;will-change:transform;
+  opacity:min(1,calc(.8*var(--bgop)));
+  background:radial-gradient(closest-side,
+    color-mix(in srgb,var(--c) 100%,transparent) 0%,color-mix(in srgb,var(--c) 88%,transparent) 8%,color-mix(in srgb,var(--c) 68%,transparent) 20%,
+    color-mix(in srgb,var(--c) 44%,transparent) 36%,color-mix(in srgb,var(--c) 24%,transparent) 52%,color-mix(in srgb,var(--c) 10%,transparent) 68%,
+    color-mix(in srgb,var(--c) 3%,transparent) 84%,transparent 100%)}
+.bg i:nth-child(1){--c:var(--o1);animation:f1 calc(58s / var(--bgsp)) ease-in-out infinite}
+.bg i:nth-child(2){--c:var(--o2);animation:f2 calc(71s / var(--bgsp)) ease-in-out infinite}
+.bg i:nth-child(3){--c:var(--o3);width:90vmax;height:90vmax;left:calc(50% - 45vmax);top:calc(50% - 45vmax);animation:f3 calc(83s / var(--bgsp)) ease-in-out infinite}
+.bg i:nth-child(4){--c:var(--o4);width:80vmax;height:80vmax;left:calc(50% - 40vmax);top:calc(50% - 40vmax);opacity:min(1,calc(.6*var(--bgop)));animation:f4 calc(66s / var(--bgsp)) ease-in-out infinite}
+:root[data-dark] .bg i{opacity:min(1,calc(.5*var(--bgop)))}
+:root[data-dark] .bg i:nth-child(4){opacity:min(1,calc(.38*var(--bgop)))}
+@keyframes f1{0%,100%{transform:translate3d(calc(-24vw*var(--bgmv)),calc(-20vh*var(--bgmv)),0) scale(1)}25%{transform:translate3d(calc(20vw*var(--bgmv)),calc(-8vh*var(--bgmv)),0) scale(1.12)}50%{transform:translate3d(calc(26vw*var(--bgmv)),calc(22vh*var(--bgmv)),0) scale(.95)}75%{transform:translate3d(calc(-10vw*var(--bgmv)),calc(14vh*var(--bgmv)),0) scale(1.06)}}
+@keyframes f2{0%,100%{transform:translate3d(calc(26vw*var(--bgmv)),calc(18vh*var(--bgmv)),0) scale(1.05)}30%{transform:translate3d(calc(-14vw*var(--bgmv)),calc(26vh*var(--bgmv)),0) scale(.94)}60%{transform:translate3d(calc(-26vw*var(--bgmv)),calc(-12vh*var(--bgmv)),0) scale(1.14)}80%{transform:translate3d(calc(6vw*var(--bgmv)),calc(-24vh*var(--bgmv)),0) scale(1)}}
+@keyframes f3{0%,100%{transform:translate3d(calc(-8vw*var(--bgmv)),calc(30vh*var(--bgmv)),0) scale(.96)}33%{transform:translate3d(calc(24vw*var(--bgmv)),calc(4vh*var(--bgmv)),0) scale(1.1)}66%{transform:translate3d(calc(-22vw*var(--bgmv)),calc(-10vh*var(--bgmv)),0) scale(1.02)}}
+@keyframes f4{0%,100%{transform:translate3d(calc(14vw*var(--bgmv)),calc(-28vh*var(--bgmv)),0) scale(1.08)}40%{transform:translate3d(calc(-20vw*var(--bgmv)),calc(-6vh*var(--bgmv)),0) scale(.92)}70%{transform:translate3d(calc(18vw*var(--bgmv)),calc(24vh*var(--bgmv)),0) scale(1.1)}}
+/* feines Korn gegen Farbstufen (Banding) in den sanften Verläufen */
+.bg::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 #p-chart{touch-action:none}
 details.glass{margin-top:14px}
 #set-body details.glass{margin-top:0;margin-bottom:12px}
@@ -204,6 +219,9 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .fab{width:68px;height:56px;border-radius:20px;display:grid;place-items:center;color:var(--a2);padding:0;transition:transform .15s,opacity .2s}
 .fab:active{transform:scale(.93)}
 .fab.primary{background:linear-gradient(135deg,rgba(var(--a1r),.32),rgba(var(--a2r),.32));color:var(--fab);border-color:rgba(var(--wr),.7)}
+/* Dark Mode: höhere Deckkraft + Sättigung/Helligkeit im Hintergrund-Blur, damit Farben (z. B. Gelb) nicht zu Braun verschmutzen */
+:root[data-dark] .fab.primary{background:linear-gradient(135deg,rgba(var(--a1r),.78),rgba(var(--a2r),.74));color:#fff;border-color:rgba(255,255,255,.28);
+  -webkit-backdrop-filter:blur(22px) saturate(1.9) brightness(1.25);backdrop-filter:blur(22px) saturate(1.9) brightness(1.25);box-shadow:0 6px 22px rgba(var(--a2r),.35),inset 0 1px 0 rgba(255,255,255,.3)}
 .fab.danger{color:#e11d48}
 .fab.off{opacity:.35;pointer-events:none}
 /* generic */
@@ -481,10 +499,10 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 :root[data-dark]{color-scheme:dark;--sel:#3d3670;--ink:#f1eefc;--ink2:#b3adce;--ink3:#7a7499;--wr:34,30,62;--stroke:rgba(255,255,255,.16);--n:190,184,225;--deep:0,0,20;--inkr:241,238,252;--sh:0,0,0;--fab:#c4b5fd;--bgs:#0e0b1f;--bg1:#14102b;--bg2:#0b0919;--o1:rgba(var(--a1r),.55);--o2:rgba(var(--a2r),.5);--o3:rgba(var(--a1r),.35);--o4:rgba(var(--a2r),.35)}
 /* statischer Hintergrund */
 .bg.static i{animation:none}
-.bg.static i:nth-child(1){transform:translate(-22vw,-16vh)}
-.bg.static i:nth-child(2){transform:translate(26vw,14vh)}
-.bg.static i:nth-child(3){transform:translate(-10vw,30vh)}
-.bg.static i:nth-child(4){transform:translate(16vw,-26vh)}
+.bg.static i:nth-child(1){transform:translate(-20vw,-16vh)}
+.bg.static i:nth-child(2){transform:translate(24vw,16vh)}
+.bg.static i:nth-child(3){transform:translate(-8vw,28vh)}
+.bg.static i:nth-child(4){transform:translate(14vw,-26vh)}
 /* Einstellungen: Theme-Auswahl, Regler */
 .themes{display:flex;gap:4px;justify-content:space-between;margin:4px 0 8px}
 .theme{flex:1;min-width:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--ink2)}
