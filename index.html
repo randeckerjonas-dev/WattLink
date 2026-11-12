@@ -234,6 +234,7 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
 .seg button{position:relative;z-index:1;border:0;background:none;font-size:14px;padding:9px 4px;color:var(--ink2);display:flex;align-items:center;justify-content:center;gap:6px}
 .seg button.on{color:var(--ink);font-weight:400}
 .seg .ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/var(--n));border-radius:12px;background:var(--sel);box-shadow:0 3px 12px rgba(var(--sh),.2);transform:translateX(calc(var(--i)*100%));transition:transform .25s cubic-bezier(.3,.8,.3,1)}
+.seg.none .ind{opacity:0}
 .seg.sm button{font-size:13px;padding:7px 4px}
 .nameinp{width:100%;font:inherit;font-size:27px;font-weight:300;background:transparent;border:0;border-bottom:1px solid rgba(var(--n),.25);padding:6px 2px;color:var(--ink);outline:none;border-radius:0}
 .nameinp::placeholder{color:var(--ink3)}
@@ -1677,10 +1678,10 @@ window.addEventListener('popstate',e=>{
 
 /* ───────── UI-Bausteine ───────── */
 function segmented(opts,curKey,onSel,cls=''){
-  const n=opts.length;let idx=Math.max(0,opts.findIndex(o=>o[0]===curKey));
-  const root=h('div',{class:'seg '+cls,style:`--n:${n};--i:${idx}`},h('div',{class:'ind'}));
+  const n=opts.length;let idx=opts.findIndex(o=>o[0]===curKey);
+  const root=h('div',{class:'seg '+cls+(idx<0?' none':''),style:`--n:${n};--i:${Math.max(0,idx)}`},h('div',{class:'ind'}));
   opts.forEach(([k,label],i)=>root.append(h('button',{type:'button',class:i===idx?'on':'',html:label,onclick:()=>{
-    if(i===idx)return;idx=i;root.style.setProperty('--i',i);
+    if(i===idx)return;idx=i;root.classList.remove('none');root.style.setProperty('--i',i);
     $$('button',root).forEach((x,j)=>x.classList.toggle('on',j===i));onSel(k);}})));
   return root;
 }
@@ -2552,7 +2553,7 @@ async function askExit(){
 const RPE=[['Sehr leicht','Locker, Unterhaltung problemlos'],['Leicht','Entspannt, lange durchzuhalten'],['Mittel','Fordernd, aber gut machbar'],['Hart','Sehr anstrengend, schwere Atmung'],['Maximal','All out – mehr ging nicht']];
 function rpeInput(sm,onChange,init){
   if(init==null)delete sm.rpe;else sm.rpe=init;      // keine Vorauswahl: ohne Eingabe keine Daten
-  const inp=h('input',{type:'range',class:'rpe unset',min:1,max:5,step:1,value:3,'aria-label':'Gefühlte Anstrengung'});
+  const inp=h('input',{type:'range',class:'rpe unset',min:1,max:5,step:1,value:3,'aria-label':'RPE'});
   const info=h('div',{style:'display:none'});
   const pick=()=>{sm.rpe=+inp.value;inp.classList.remove('unset');onChange&&onChange(true)};
   ['input','change','pointerup'].forEach(ev=>inp.addEventListener(ev,pick));
@@ -2602,7 +2603,7 @@ function watchSetpoint(now,b){
     if(sp==null||!play.running||play.paused||play.i!==bi||play.sentW!==sw||(play.ovr&&play.ovr.carry))return;
     const t=performance.now();
     if(Math.abs(sp-sw)<5){if(play.devSp!=null||play.ovr)hideOverride();return}   // wieder auf dem Plan-Wert
-    if(play.std){sendW(sw);return}   // Standard-Tests: keine manuelle Anpassung – Plan-Wert still wiederherstellen
+    if(play.std==='ftp'){sendW(sw);return}   // Standard-Tests: keine manuelle Anpassung – Plan-Wert still wiederherstellen
     if(play.devSp!==sp){play.devSp=sp;play.devSince=t;return}                    // noch in Bewegung (z. B. mehrmals gedrückt)
     if(t-play.devSince>=2000&&(!play.ovr||play.ovr.sp!==sp))showOverride(play.blocks[bi],sp);
   });
@@ -3021,13 +3022,12 @@ function buildSettings(){
       field('Maximale Herzfrequenz',{get:()=>S.settings.maxHr,set:v=>{S.settings.maxHr=Math.round(v);save()},step:1,min:100,max:230,unit:'bpm',cb:()=>{drawLthr();drawHr()}}),
       lthrBox],'leistung'),
     det('Körperdaten',[
-      h('div',{class:'hint',style:'margin-top:0'},'Für genauere Kalorienwerte in der Aktivitätsanalyse. Die Angaben bleiben auf deinem Gerät bzw. in deinem Konto.'),
       field('Gewicht',{get:()=>S.settings.kg||70,empty:()=>!S.settings.kg,set:v=>{S.settings.kg=Math.round(v*10)/10;save()},step:.5,min:30,max:250,unit:'kg'}),
       (()=>{const inp=h('input',{type:'date',class:'fi bdate',value:S.settings.birth||'',max:new Date().toISOString().slice(0,10),min:'1900-01-01'});
         inp.addEventListener('change',()=>{S.settings.birth=inp.value||'';save()});
         return h('div',{class:'field'},h('div',{class:'fl'},'Geburtsdatum'),h('div',{class:'ctl'},inp))})(),
       h('div',{class:'field'},h('div',{class:'fl'},'Geschlecht'),
-        segmented([['m','Männlich'],['f','Weiblich'],['x','Keine Angabe']],S.settings.sex||'x',k=>{S.settings.sex=k;save()},'sm'))],'body'),
+        segmented([['m','Männlich'],['f','Weiblich']],S.settings.sex,k=>{S.settings.sex=k;save()},'sm'))],'body'),
     det('Leistungszonen',zones,'pzones'),det('Herzfrequenzzonen',hrz,'hzones'));
   drawZones();drawHr();
   const spBox=h('div');
@@ -3277,26 +3277,19 @@ V.logd={enter(p){openRun(p.id)},redraw(){drawLd()}};
 const ld={id:null,sm:null,n:0,show:{w:1,h:1,c:0,plan:1},color:'p',cur:null,cv:null,wg:null,A:null,Z:null,ftp:250,maxHr:190,L:36,pw:0};
 const LDC={get w(){return TC.a2},get h(){return TC.ink},c:'#ff4f8b'};
 /* Normalized Power: Mittel der 4. Potenz der Leistung (nur Fahrzeit) → 4. Wurzel */
-/* Normalized Power (Coggan): 30-s-gleitender Mittelwert der Leistung → 4. Potenz → Mittel → 4. Wurzel. Unter 30 s: Durchschnittsleistung. */
-const normPower=w=>{
-  if(!w.length)return null;
-  if(w.length<30)return Math.round(w.reduce((a,b)=>a+b,0)/w.length);
-  let sum=0,acc=0,n=0;for(let i=0;i<30;i++)sum+=w[i];
-  for(let i=29;i<w.length;i++){if(i>29)sum+=w[i]-w[i-30];acc+=Math.pow(sum/30,4);n++}
-  return Math.round(Math.pow(acc/n,.25));
-};
+const normPower=w=>w.length?Math.round(Math.pow(w.reduce((a,b)=>a+Math.pow(b,4),0)/w.length,.25)):null;
 /* ───────── Körperdaten, Energieumsatz, Belastung (IF/TSS), Bestenleistungen ───────── */
 function bodyNow(){
   const s=S.settings;let age=null;
   if(s.birth){const b=new Date(s.birth),n=new Date();age=n.getFullYear()-b.getFullYear()-((n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))?1:0)}
   return{kg:s.kg||null,age,sex:s.sex||''};
 }
-/* Ruheumsatz nach Schofield (FAO/WHO 1985): nur Gewicht, Alter, Geschlecht (MJ/Tag → kcal). Ohne Geschlecht: Mittel aus beiden. */
+/* Ruheumsatz nach Schofield (FAO/WHO 1985): nur Gewicht, Alter, Geschlecht (MJ/Tag → kcal). */
 function rmrKcalDay(b){
-  if(!b||!b.kg||b.age==null)return null;
+  if(!b||!b.kg||b.age==null||(b.sex!=='m'&&b.sex!=='f'))return null;
   const a=b.age,k=b.kg,pick=(m,f)=>{const t=a<18?0:a<30?1:a<60?2:3;return[m,f].map(x=>x[t][0]*k+x[t][1])};
   const M=[[.074,2.754],[.063,2.896],[.048,3.653],[.049,2.459]],F=[[.056,2.898],[.062,2.036],[.034,3.538],[.038,2.755]];
-  const[mv,fv]=pick(M,F),mj=b.sex==='m'?mv:b.sex==='f'?fv:(mv+fv)/2;
+  const[mv,fv]=pick(M,F),mj=b.sex==='m'?mv:fv;
   return mj*239.006;
 }
 /* Energie einer Einheit.
@@ -3306,22 +3299,20 @@ function rmrKcalDay(b){
 function energyOf(sm,A){
   const b=sm.body||bodyNow(),GE=.24,rmr=rmrKcalDay(b),rs=rmr?rmr/86400:0;
   let tot=0,act=0,n=0,kt=0,nh=0;
-  const kfn=hr=>{const m=(-55.0969+.6309*hr+.1988*b.kg+.2017*b.age)/4.184,f=(-20.4022+.4472*hr-.1263*b.kg+.074*b.age)/4.184;return b.sex==='m'?m:b.sex==='f'?f:(m+f)/2};
+  const kfn=hr=>{const m=(-55.0969+.6309*hr+.1988*b.kg+.2017*b.age)/4.184,f=(-20.4022+.4472*hr-.1263*b.kg+.074*b.age)/4.184;return b.sex==='m'?m:f};
   A.rows.forEach(r=>{
     if(r[6])return;const w=r[2];if(w==null||w<0)return;n++;
     const e=Math.max(w/(GE*4184),rs);tot+=e;act+=e-rs;
-    if(r[4]&&b.kg&&b.age!=null){nh++;kt+=Math.max(kfn(r[4]),rs*60)/60}
+    if(r[4]&&rmr){nh++;kt+=Math.max(kfn(r[4]),rs*60)/60}
   });
   const hrOk=nh>=n*.7&&nh>=120;
   return{kcal:Math.round(tot),active:rmr?Math.round(act):null,hrKcal:hrOk?Math.round(kt):null,personal:!!rmr,rmr:rmr?Math.round(rmr):null};
 }
 /* Belastung: IF = NP / FTP, TSS = (Dauer · NP · IF) / (FTP · 3600) · 100 (Coggan). FTP = Wert zum Zeitpunkt der Einheit. */
-const IF_BANDS=[[.75,'Erholung'],[.85,'Grundlage'],[.95,'Tempo'],[1.05,'Schwelle'],[1.15,'Intervalle'],[9,'Maximal kurz']];
-const TSS_BANDS=[[150,'niedrig – am nächsten Tag meist erholt'],[300,'mittel – Restermüdung, nach 2 Tagen weg'],[450,'hoch – Restermüdung auch nach 2 Tagen'],[1e9,'sehr hoch – mehrere Tage Erholung']];
 function loadOf(A){
   if(!A.np||!A.ftp||!A.moving)return null;
   const IF=A.np/A.ftp,tss=A.moving*A.np*IF/(A.ftp*3600)*100;
-  return{IF,tss,ifLabel:IF_BANDS.find(b=>IF<b[0])[1],tssLabel:TSS_BANDS.find(b=>tss<b[0])[1]};
+  return{IF,tss};
 }
 /* Bestenleistungen: höchste Durchschnittsleistung über feste Dauern (lückenlose Sekunden, ohne Pausen) */
 const MMP_D=[5,15,30,60,300,600,1200,1800,3600];
@@ -3392,14 +3383,14 @@ async function openRun(id){
   const A=analyzeRun(sm,rec);ld.sm=sm;ld.A=A;ld.ftp=A.ftp;ld.Z=A.Z;ld.maxHr=A.maxHr;
   const kpi=(l,v,u)=>h('div',{class:'kpi'},h('small',{},l),h('b',{},v==null?'–':String(v),v!=null&&u&&h('i',{},u)));
   const rpeVal=h('b',{},''),paintRpe=()=>{rpeVal.textContent=sm.rpe!=null?`${sm.rpe} / 5`:'–'};paintRpe();
-  const rpeKpi=h('div',{class:'kpi'},h('small',{style:'display:flex;align-items:center;gap:2px'},'Gefühlte Anstrengung',
-    h('button',{type:'button',class:'mini-btn kedit','aria-label':'Gefühlte Anstrengung bearbeiten',html:I('edit',15),onclick:()=>{
+  const rpeKpi=h('div',{class:'kpi'},h('small',{style:'display:flex;align-items:center;gap:2px'},'RPE',
+    h('button',{type:'button',class:'mini-btn kedit','aria-label':'RPE bearbeiten',html:I('edit',15),onclick:()=>{
       const tmp={};let m;
       const ok=h('button',{class:'btn primary',onclick:async()=>{
         if(tmp.rpe==null){closeModal(m);return}
         sm.rpe=tmp.rpe;const saved=await runSave(sm,rec||{id:sm.id,cols:REC_COLS,rows:[],blocks:[]});
         closeModal(m);paintRpe();toast(saved?'Gespeichert':'Speichern fehlgeschlagen')}},'Speichern');
-      m=openModal([h('h3',{},'Gefühlte Anstrengung'),rpeInput(tmp,()=>{},sm.rpe),
+      m=openModal([h('h3',{},'RPE'),rpeInput(tmp,()=>{},sm.rpe),
         h('div',{class:'btnrow'},h('button',{class:'btn',onclick:()=>closeModal(m)},'Abbrechen'),ok)],()=>closeModal(m));
     }})),rpeVal);
   if(sm.test)host.append(testCard(sm,testResult(sm,A.rows,rec&&rec.blocks),rec));
@@ -3410,16 +3401,14 @@ async function openRun(id){
     kpi('Ø Herzfrequenz',A.avgHr??sm.avgHr,'bpm'),kpi('Max. Herzfrequenz',A.maxHr2??sm.maxHr,'bpm'),
     rpeKpi)));
   if(A.rows.length&&A.avgW!=null){
-    const E=energyOf(sm,A),L=loadOf(A),short=A.moving<1200;
+    const E=energyOf(sm,A),L=loadOf(A);
     const cell=(l,v,u,sub)=>h('div',{class:'kpi'},h('small',{},l),h('b',{},v==null?'–':String(v),v!=null&&u?h('i',{},u):null),sub?h('small',{class:'ksub'},sub):null);
-    host.append(h('div',{class:'sub sbtn'},h('span',{},'Energie & Belastung'),h('button',{type:'button',class:'mini-btn kedit','aria-label':'So wird gerechnet',html:I('info',16),onclick:()=>energyInfo(E)})),
+    host.append(h('div',{class:'sub'},'Energie & Belastung'),
       h('div',{class:'glass pad'},h('div',{class:'kpis'},
-        cell('Kalorien',E.kcal,'kcal',E.personal?`davon aktiv ${E.active} kcal`:'≈ aus der Leistung'),
-        cell('Intensitätsfaktor (IF)',L?L.IF.toFixed(2):null,'',L?L.ifLabel:''),
-        cell('Trainingsbelastung (TSS)',L?Math.round(L.tss):null,'',L?L.tssLabel:''),
-        cell('HF-Schätzung',E.hrKcal,E.hrKcal!=null?'kcal':'',E.hrKcal!=null?'nach Keytel':'Brustgurt + Körperdaten nötig')),
-        ...[!E.personal?h('div',{class:'hint',style:'margin:14px 0 0'},'Für genauere Werte Gewicht, Geburtsdatum und Geschlecht unter Profil → Einstellungen → Körperdaten eintragen.'):null,
-            short&&L?h('div',{class:'hint',style:'margin:12px 0 0'},'Bei Einheiten unter 20 min sind NP, IF und TSS nur eingeschränkt aussagekräftig.'):null].filter(Boolean)));
+        cell('Kalorien',E.kcal,'kcal',E.personal?`davon aktiv ${E.active} kcal`:''),
+        cell('IF',L?L.IF.toFixed(2):null,''),
+        cell('TSS',L?Math.round(L.tss):null,''),
+        ...(E.hrKcal!=null?[cell('HF-Schätzung',E.hrKcal,'kcal')]:[]))));
   }
   if(!A.rows.length){host.append(h('div',{class:'hint'},'Die Sekundenwerte dieser Einheit sind auf diesem Gerät nicht verfügbar.'))}
   else{
@@ -3448,6 +3437,7 @@ async function openRun(id){
     };
     host.append(...zcard('Leistungszonen',PWZ_COL,A.pz));
     if(A.hasHr)host.append(...zcard('Herzfrequenzzonen',HRZ_COL,A.hz));
+    if(A.avgW!=null)bestCard(host,sm,A);
     /* Auswertung je Block (Programmzeit e liegt im Block) */
     const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null;
     const items=((rec&&rec.blocks)||[]).map(b=>{
@@ -3459,7 +3449,6 @@ async function openRun(id){
       h('div',{class:'bn'},h('div',{},bname(x.b)),h('small',{},fmtTime(x.b.dur))),
       h('div',{class:'bv'},h('div',{},x.w!=null?`${x.w} W`:'–'),h('small',{},x.w!=null?`${Math.round(x.w/A.ftp*100)} %`:'')),
       h('div',{class:'bh'},x.hr!=null?`${x.hr} bpm`:'–')))));
-    if(A.avgW!=null)bestCard(host,sm,A);
   }
 }
 /* Bestenleistungen ganz unten; Pokal = neuer persönlicher Bestwert gegenüber allen anderen Einheiten */
@@ -3467,15 +3456,16 @@ async function bestCard(host,sm,A){
   const mine=sm.mmp&&Object.keys(sm.mmp).length?sm.mmp:meanMax(A.rows);
   if(!sm.mmp){sm.mmp=mine;runPutSum(sm)}
   const box=h('div',{class:'glass pad'}),title=h('div',{class:'sub'},'Bestenleistungen');
-  host.append(title,box);
   const kg=(sm.body||bodyNow()).kg,ds=MMP_D.filter(d=>mine[d]);
+  if(!ds.length)return;
+  host.append(title,box);
   const paint=prior=>{
     box.replaceChildren(...ds.map(d=>{
       const w=mine[d],pr=prior&&prior[d],rec=pr!=null&&w>pr;
       return h('div',{class:'mmr'},h('span',{class:'ml'},durLbl(d)),
         h('div',{class:'mv'},h('b',{},`${w} W`),h('small',{},[kg?`${(w/kg).toFixed(2).replace('.',',')} W/kg`:null,`${Math.round(w/A.ftp*100)} % FTP`].filter(Boolean).join(' · '))),
         h('span',{class:'mtr'+(rec?' gold':''),title:rec?`Bisher ${pr} W`:''},rec?ic('trophy',20):null));
-    }),...(ds.length?[]:[h('div',{class:'hint',style:'margin:0'},'Für Bestenleistungen ist die Einheit zu kurz.')]));
+    }));
   };
   paint(null);
   /* Vergleich mit allen anderen Einheiten (fehlende Werte werden aus lokalen Sekundendaten nachgerechnet) */
@@ -3486,18 +3476,6 @@ async function bestCard(host,sm,A){
     for(const d in r.mmp)prior[d]=Math.max(prior[d]||0,r.mmp[d]);
   }
   if(ld.id===sm.id&&box.isConnected)paint(prior);
-}
-function energyInfo(E){
-  let m;
-  m=openModal([h('h3',{},'So wird gerechnet'),
-    h('div',{class:'einfo'},
-      h('p',{},h('b',{},'Kalorien. '),'Je Sekunde: Leistung ÷ Bruttowirkungsgrad (24 %, Radfahren) = Stoffwechselleistung, mindestens Ruheumsatz. Summe über die Einheit (ohne Pausen).'),
-      h('p',{},h('b',{},'Aktiv. '),'Gesamt minus Ruheumsatz derselben Zeit. Ruheumsatz nach Schofield (FAO/WHO) aus Gewicht, Alter und Geschlecht'+(E.rmr?` (bei dir ca. ${E.rmr} kcal/Tag)`:'')+'.'),
-      h('p',{},h('b',{},'HF-Schätzung. '),'Formel nach Keytel et al. (2005) aus Herzfrequenz, Gewicht, Alter, Geschlecht. Nur eine Gegenprobe: bei niedriger HF oder Hitze oft ungenau.'),
-      h('p',{},h('b',{},'NP. '),'30-s-Gleitmittel der Leistung, 4. Potenz, Mittel, 4. Wurzel (Coggan). Gewichtet harte Phasen stärker als die Durchschnittsleistung.'),
-      h('p',{},h('b',{},'IF und TSS. '),'IF = NP ÷ FTP. TSS = Dauer (s) × NP × IF ÷ (FTP × 3600) × 100. Eine Stunde genau am FTP ergibt 100 TSS. Der FTP ist der Wert zum Zeitpunkt der Einheit.'),
-      h('p',{},h('b',{},'Bestenleistungen. '),'Höchste Durchschnittsleistung über lückenlose 5 s bis 60 min. Der Pokal zeigt einen neuen Bestwert gegenüber deinen anderen Einheiten.')),
-    h('div',{class:'btnrow'},h('button',{class:'btn primary',onclick:()=>closeModal(m)},'Verstanden'))],()=>closeModal(m));
 }
 /* Tippen außerhalb des Diagramms blendet Strich, Punkte und Widget aus */
 document.addEventListener('pointerdown',e=>{
