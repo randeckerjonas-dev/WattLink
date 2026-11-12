@@ -47,7 +47,10 @@ button{font:inherit;color:inherit;cursor:pointer}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 #p-chart{touch-action:none}
 details.glass{margin-top:14px}
-#set-body details.glass{margin-top:0;margin-bottom:12px}
+.setrow{display:flex;align-items:center;gap:14px;width:100%;padding:13px 2px;background:none;border:0;border-top:1px solid rgba(var(--n),.1);font:inherit;font-size:16px;color:var(--ink);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.setrow:first-child{border-top:0}.setrow .si2{display:inline-flex;color:var(--ink2)}.setrow .ch{margin-left:auto;display:inline-flex;color:var(--ink3)}
+#set-body .glass.pad.sg{padding-top:4px;padding-bottom:4px}
+#setp-body .glass.pad{margin-bottom:12px}
 .acct-err{color:#d6336c}
 .psub{font-size:12.5px;color:var(--ink2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px}
@@ -669,6 +672,15 @@ body{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none}
     <div class="scroll" id="auth-body"></div>
   </section>
 
+  <section class="page" id="setp">
+    <header class="tb">
+      <button class="iconbtn glass l" data-act="back" data-i="back" aria-label="Zurück"></button>
+      <div class="tbc"><div class="ptitle" id="setp-title"></div></div>
+      <div></div>
+    </header>
+    <div class="scroll" id="setp-body"></div>
+  </section>
+
   <section class="page" id="editp">
     <header class="tb">
       <button class="iconbtn glass l" data-act="back" data-i="back" aria-label="Zurück"></button>
@@ -779,6 +791,15 @@ const PATHS={
   cloudok:'<path d="M7.5 18.5a4.25 4.25 0 0 1-.55-8.46A6 6 0 0 1 18.1 9.3a4.6 4.6 0 0 1-.6 9.2z"/><path d="M9.6 13.6l1.8 1.8 3.2-3.6"/>',
   clouderr:'<path d="M7.5 18.5a4.25 4.25 0 0 1-.55-8.46A6 6 0 0 1 18.1 9.3a4.6 4.6 0 0 1-.6 9.2z"/><path d="M12 10.8v3.2M12 16.4v.01"/>',
   syncarr:'<path d="M20 11a8 8 0 0 0-14.3-3.6L4 9.5M4 4v5.5h5.5M4 13a8 8 0 0 0 14.3 3.6l1.7-2.1M20 20v-5.5h-5.5"/>',
+  body:'<circle cx="12" cy="4.6" r="2"/><path d="M5.5 9.5L12 8.5l6.5 1M12 8.5v6M12 14.5l-3.5 6M12 14.5l3.5 6"/>',
+  zbolt:'<path d="M3.5 4.5v15"/><g transform="translate(4.5 0)"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></g>',
+  zheart:'<path d="M3.5 4.5v15"/><g transform="translate(4 0)"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></g>',
+  phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-.9 2-1.8 0-1.3-1-1.6-1-2.7 0-1 .8-1.5 1.8-1.5H17a3.5 3.5 0 0 0 3.5-3.5C20.5 6.7 16.8 3.5 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.3" r=".9"/><circle cx="15" cy="7.8" r=".9"/>',
+  speaker:'<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+  rssi:'<circle cx="6" cy="18" r="1.2"/><path d="M5 11.5a7.5 7.5 0 0 1 7.5 7.5M5 5.5A13.5 13.5 0 0 1 18.5 19"/>',
+  music:'<path d="M9 17.5V5.5l10-2v12"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/>',
+  chevr:'<path d="M9 5l7 7-7 7"/>',
   sparkle:'<g fill="currentColor" stroke="none"><path d="M10.5 3c.6 4.6 2.6 6.6 7.2 7.2-4.6.6-6.6 2.6-7.2 7.2-.6-4.6-2.6-6.6-7.2-7.2C7.9 9.6 9.9 7.6 10.5 3z"/><path d="M18.5 14.5c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3z"/></g>'
 };
 const I=(n,s=22)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${PATHS[n]||''}</svg>`;
@@ -1361,6 +1382,19 @@ function compileMain(m){
   }
   return out;
 }
+/* Intervalle/Split-Intervalle → Manuell: wiederholte Paare als verschachtelte Units; letztes Intervall ohne Erholung steht einzeln */
+function mainToUnits(m){
+  if(m.type!=='intervals')return compileMain(m).map(b=>({dur:b.dur,p0:b.p0,p1:b.p1}));
+  const v=m.iv,n=Math.max(1,Math.round(v.reps)),blk=(d,p)=>({dur:Math.max(1,Math.round(d)),p0:p,p1:p});
+  const grp=(rep,items)=>rep<=0?[]:rep===1?items:[{rep,items}];
+  let on;
+  if(v.split){
+    const cyc=Math.max(1,v.microOn+v.microOff),k=Math.max(1,Math.round((v.onDur+v.microOff)/cyc));
+    on=[...grp(k-1,[blk(v.microOn,v.onPct),blk(v.microOff,v.microOffPct)]),blk(v.microOn,v.onPct)];
+  }else on=[blk(v.onDur,v.onPct)];
+  const off=blk(v.offDur,v.offPct);
+  return v.lastRecovery?grp(n,[...on,off]):[...grp(n-1,[...on,off]),...on];
+}
 const peakOf=bl=>Math.max(60,...bl.map(b=>Math.max(b.p0,b.p1)));
 function autoWarm(D,main){
   if(D<=0)return[];
@@ -1879,7 +1913,7 @@ function phasePanel(which){
 function mainPanel(){
   const d=cr.draft,m=d.main,wrap=h('div');
   wrap.append(segmented([['intervals','Intervalle'],['steady','Dauer'],['manual','Manuell']],m.type,v=>{
-    if(v==='manual'&&m.type!=='manual'&&!m.edited)m.blocks=compileMain(m).map(b=>({dur:b.dur,p0:b.p0,p1:b.p1}));
+    if(v==='manual'&&m.type!=='manual'&&!m.edited)m.blocks=mainToUnits(m);
     m.type=v;cr.dirty=true;drawPanel()}));
   if(m.type==='intervals'){
     const v=m.iv;
@@ -2838,6 +2872,14 @@ function buildEditProfile(){
 }
 
 /* ───────── Einstellungen ───────── */
+V.setp={enter(p){
+  const d=SETSEC[p.key];if(!d){go('profile');return}
+  $('#setp-title').textContent=d.title;
+  const host=$('#setp-body');host.replaceChildren();
+  d.groups.forEach(g=>{if(g.t)host.append(h('div',{class:'sub'},g.t));host.append(h('div',{class:'glass pad'},...g.n))});
+  d.open&&d.open();
+},redraw(){}};
+let SETSEC={};
 V.profile={enter(){buildSettings();if(Cloud.user&&Cloud.prof().email&&!Cloud.user.emailVerified)Cloud.reloadUser().catch(()=>{})}};
 /* Skeleton-Baustein (grauer, schimmernder Platzhalter im Layout des echten Elements) */
 const skel=(w,hh,r=8)=>h('span',{class:'skel',style:`display:block;width:${typeof w==='number'?w+'px':w};height:${hh}px;border-radius:${r}px`});
@@ -2981,10 +3023,8 @@ function buildSettings(){
     lthrBox.append(field('Schwellen-HF (LTHR)',{get:()=>lthr(),set:v=>{S.settings.lthr=Math.round(v);save()},step:1,min:80,max:230,unit:'bpm',cb:drawHr}),
       h('div',{class:'hint'},'Ohne eigenen Wert: 90 % der maximalen Herzfrequenz.'))};
   drawLthr();
-  /* jede Kategorie ein-/ausklappbar; der Zustand bleibt pro Gerät gespeichert */
-  const det=(t,c,key)=>{
-    const k='wattlink-set-'+key,d=h('details',{class:'glass pad'},h('summary',{},t),...(Array.isArray(c)?c:[c]));
-    d.open=LS(k)==='1';d.addEventListener('toggle',()=>LS(k,d.open?'1':'0'));return d};
+  SETSEC={};
+  const sec=(key,title,icon,groups,open)=>{SETSEC[key]={title,icon,open,groups:groups.map(g=>Array.isArray(g)?{n:g}:g instanceof Node?{n:[g]}:g)}};
   /* Konto */
   const acctBox=h('div');
   let amode=null,ast=null,aic=null;
@@ -3016,19 +3056,21 @@ function buildSettings(){
     paintSt();
   };
   amode=keyOf();buildAcct();paintSt();Cloud.listeners.add(updAcct);
-  body.append(...profileHead(),det('Konto',acctBox,'konto'),
-    det('Leistung',[
+  const leist=[
       field('FTP',{get:()=>S.settings.ftp,set:v=>{S.settings.ftp=Math.round(v);save()},step:5,min:50,max:600,unit:'W',cb:drawZones}),
       field('Maximale Herzfrequenz',{get:()=>S.settings.maxHr,set:v=>{S.settings.maxHr=Math.round(v);save()},step:1,min:100,max:230,unit:'bpm',cb:()=>{drawLthr();drawHr()}}),
-      lthrBox],'leistung'),
-    det('Körperdaten',[
+      lthrBox];
+  const koerper=[
       field('Gewicht',{get:()=>S.settings.kg||70,empty:()=>!S.settings.kg,set:v=>{S.settings.kg=Math.round(v*10)/10;save()},step:.5,min:30,max:250,unit:'kg'}),
       (()=>{const inp=h('input',{type:'date',class:'fi bdate',value:S.settings.birth||'',max:new Date().toISOString().slice(0,10),min:'1900-01-01'});
         inp.addEventListener('change',()=>{S.settings.birth=inp.value||'';save()});
         return h('div',{class:'field'},h('div',{class:'fl'},'Geburtsdatum'),h('div',{class:'ctl'},inp))})(),
       h('div',{class:'field'},h('div',{class:'fl'},'Geschlecht'),
-        segmented([['m','Männlich'],['f','Weiblich']],S.settings.sex,k=>{S.settings.sex=k;save()},'sm'))],'body'),
-    det('Leistungszonen',zones,'pzones'),det('Herzfrequenzzonen',hrz,'hzones'));
+        segmented([['m','Männlich'],['f','Weiblich']],S.settings.sex,k=>{S.settings.sex=k;save()},'sm'))];
+  sec('konto','Konto','user',[acctBox],()=>{Cloud.listeners.add(updAcct);updAcct()});
+  sec('body','Leistungs- und Körperdaten','body',[{t:'Leistung',n:leist},{t:'Körperdaten',n:koerper}]);
+  sec('pzones','Leistungszonen','zbolt',[zones]);
+  sec('hzones','Herzfrequenzzonen','zheart',[hrz]);
   drawZones();drawHr();
   const spBox=h('div');
   const spId=h('input',{class:'fi',style:'width:100%;text-align:left;padding:0 12px',placeholder:'Client-ID',value:S.settings.spId||'',autocapitalize:'off',autocomplete:'off',spellcheck:'false'});
@@ -3079,10 +3121,10 @@ function buildSettings(){
   Device.listeners.add(onConn);
   const hf=h('input',{class:'fi',style:'width:100%;text-align:left;padding:0 12px',placeholder:'z. B. Polar',value:Device.filter(),autocapitalize:'off',autocomplete:'off',spellcheck:'false'});
   hf.addEventListener('change',()=>{S.settings.hrFilter=hf.value.trim();save();Device.sendFilter();toast('Gurt wird neu gesucht')});
-  body.append(det('Verbindungen',[connStat,
+  sec('verb','Verbindungen','rssi',[[connStat,
       h('div',{class:'field',style:'margin-top:14px'},h('div',{class:'fl'},'Name des Brustgurts enthält'),hf),
       h('div',{class:'hint'},'Der ESP verbindet sich mit dem ersten Herzfrequenz-Sensor, dessen Name das enthält (Groß-/Kleinschreibung egal), z. B. „Polar“, „Wahoo“, „Garmin“ oder „HRM“. Leer: irgendein Herzfrequenz-Sensor. Der Gurt darf nicht gleichzeitig mit der Uhr verbunden sein.'),
-      h('div',{class:'addrow'},h('button',{class:'btn',onclick:()=>{if(Device.mode==='ble'&&Device.state==='on'){Device.sendFilter();toast('Gurt wird neu gesucht')}else toast('Nur mit verbundenem ESP')}},'Gurt neu suchen'))],'verb'));
+      h('div',{class:'addrow'},h('button',{class:'btn',onclick:()=>{if(Device.mode==='ble'&&Device.state==='on'){Device.sendFilter();toast('Gurt wird neu gesucht')}else toast('Nur mit verbundenem ESP')}},'Gurt neu suchen'))]],()=>{Device.listeners.add(onConn);drawConnStat()});
   /* Darstellung: Farbthema (zwei Farben), animierter Hintergrund, Kontrast/Bewegung */
   const themeBox=h('div',{class:'themes'});
   const drawThemes=()=>{
@@ -3108,16 +3150,22 @@ function buildSettings(){
   const mainSnd=toggleRow('Ton und Vibration',()=>S.settings.sound!==false,v=>{
     S.settings.sound=v;save();cdRow.classList.toggle('dim',!v);
     if(v){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume()}catch(e){}beep(880,.1);vib(40)}});
-  body.append(det('Kategorien',cats,'kat'),
-    det('Darstellung',look,'look'),
-    det('Ton und Vibration',[mainSnd,cdRow,h('div',{class:'hint'},'Der Hauptschalter gilt für alle Signaltöne und die Vibration im Training. Die Countdown-Töne sind die drei kurzen Töne vor jedem Blockwechsel.')],'ton'),
-    det('App',[
+  sec('kat','Kategorien','layers',[cats]);
+  sec('look','Darstellung','palette',[look]);
+  sec('ton','Ton und Vibration','speaker',[[mainSnd,cdRow,h('div',{class:'hint'},'Der Hauptschalter gilt für alle Signaltöne und die Vibration im Training. Die Countdown-Töne sind die drei kurzen Töne vor jedem Blockwechsel.')]]);
+  sec('app','App','phone',[[
       toggleRow('Demo-Modus (simuliertes Gerät)',()=>S.settings.sim,v=>{S.settings.sim=v;save()}),
-      h('div',{class:'hint'},'Aus: Verbindung per Web Bluetooth zum ESP. Gilt ab dem nächsten Verbinden.')],'app'),
-    det('Musik',spBox,'musik'),
-    det('Sicherung',[h('div',{class:'hint',style:'margin-top:0'},'Speichert alle Programme, Kategorien, Einstellungen und das Logbuch als Datei im Download-Ordner.'),
-      h('div',{class:'addrow'},h('button',{class:'btn',onclick:()=>exportAll()},'Exportieren'),h('button',{class:'btn',onclick:()=>$('#bfile').click()},'Importieren'))],'sich'),
-    ...(Cloud.name()?[h('div',{style:'margin-top:22px;display:flex'},h('button',{type:'button',class:'btn danger',onclick:()=>Cloud.logout()},'Abmelden'))]:[]));
+      h('div',{class:'hint'},'Aus: Verbindung per Web Bluetooth zum ESP. Gilt ab dem nächsten Verbinden.')]]);
+  sec('musik','Musik','music',[spBox]);
+  sec('sich','Sicherung','lock',[[h('div',{class:'hint',style:'margin-top:0'},'Speichert alle Programme, Kategorien, Einstellungen und das Logbuch als Datei im Download-Ordner.'),
+      h('div',{class:'addrow'},h('button',{class:'btn',onclick:()=>exportAll()},'Exportieren'),h('button',{class:'btn',onclick:()=>$('#bfile').click()},'Importieren'))]]);
+  const GROUPS=[['Konto',['konto']],['Training',['body','pzones','hzones','kat']],['App',['app','look','ton','sich']],['Verbindungen',['verb','musik']]];
+  body.append(...profileHead());
+  GROUPS.forEach(([t,keys])=>body.append(h('div',{class:'sub'},t),h('div',{class:'glass pad sg'},...keys.map(k=>{
+    const d=SETSEC[k];
+    return h('button',{type:'button',class:'setrow',onclick:()=>go('setp',{key:k})},h('span',{class:'si2',html:I(d.icon,24)}),h('span',{},d.title),h('span',{class:'ch',html:I('chevr',18)}));
+  }))));
+  if(Cloud.name())body.append(h('div',{style:'margin-top:22px;display:flex'},h('button',{type:'button',class:'btn danger',onclick:()=>Cloud.logout()},'Abmelden')));
 }
 
 /* ───────── Musik (Spotify Web API, Anmeldung per PKCE – ohne Server) ─────────
