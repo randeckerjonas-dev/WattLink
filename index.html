@@ -791,7 +791,7 @@ const PATHS={
   cloudok:'<path d="M7.5 18.5a4.25 4.25 0 0 1-.55-8.46A6 6 0 0 1 18.1 9.3a4.6 4.6 0 0 1-.6 9.2z"/><path d="M9.6 13.6l1.8 1.8 3.2-3.6"/>',
   clouderr:'<path d="M7.5 18.5a4.25 4.25 0 0 1-.55-8.46A6 6 0 0 1 18.1 9.3a4.6 4.6 0 0 1-.6 9.2z"/><path d="M12 10.8v3.2M12 16.4v.01"/>',
   syncarr:'<path d="M20 11a8 8 0 0 0-14.3-3.6L4 9.5M4 4v5.5h5.5M4 13a8 8 0 0 0 14.3 3.6l1.7-2.1M20 20v-5.5h-5.5"/>',
-  body:'<circle cx="12" cy="4.6" r="2"/><path d="M5.5 9.5L12 8.5l6.5 1M12 8.5v6M12 14.5l-3.5 6M12 14.5l3.5 6"/>',
+  body:'<circle cx="12" cy="4.2" r="2.4"/><path d="M8.5 8h7a3 3 0 0 1 3 3v5.5a1 1 0 0 1-2 0V21a1.75 1.75 0 0 1-3.5 0V16H11v5a1.75 1.75 0 0 1-3.5 0v-4.5a1 1 0 0 1-2 0V11a3 3 0 0 1 3-3zM7.5 11.5v5M16.5 11.5v5"/>',
   zbolt:'<path d="M3.5 4.5v15"/><g transform="translate(4.5 0)"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></g>',
   zheart:'<path d="M3.5 4.5v15"/><g transform="translate(4 0)"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></g>',
   phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
@@ -2275,7 +2275,7 @@ V.play={
     $('#pl-dbg').style.display=Device.mode==='sim'&&Device.state==='on'?'flex':'none';
     if(Device.state!=='on')toast('Nicht verbunden – Programm läuft ohne Gerät');
     clearInterval(play.timer);play.timer=setInterval(tick,250);tick();
-    play.rec=[];play.startedAt=Date.now();clearInterval(play.recT);play.recT=setInterval(recTick,1000);
+    play.rec=[];play.recOff=0;play.startedAt=Date.now();clearInterval(play.recT);play.recT=setInterval(recTick,1000);
     Music.start();buildArcs();
     startRaf();
   },
@@ -2306,6 +2306,7 @@ function autoPause(){
 }
 function setPaused(p,auto){
   if(!play.running||play.paused===p)return;
+  if(!p)play.resumeHold=false;
   play.paused=p;play.auto=!!auto&&p;play.zeroSince=0;play.last=performance.now();setPauseIcon();
   if(p){Device.setPower(IDLE_W);hideOverride()}else play.sentW=null;
   if(auto){beep(p?440:880,.15);vib(p?[80,60,80]:60);toast(p?'Pausiert – weiter treten zum Fortsetzen':'Weiter geht’s')}
@@ -2319,7 +2320,7 @@ function tick(){
   if(play.std&&!play.gaveUp){
     extendOpen();
     const bb=play.blocks[blockIndexAt(play.blocks,play.elapsed)];
-    if(play.paused&&bb&&bb.phase==='main'){play.pauseSec+=dt;if(play.pauseSec>PAUSE_MAX[play.std]){giveUp('pause');toast('Pause zu lang – Test beendet');return}}
+    if(play.paused&&!play.resumeHold&&bb&&bb.phase==='main'){play.pauseSec+=dt;if(play.pauseSec>PAUSE_MAX[play.std]){giveUp('pause');toast('Pause zu lang – Test beendet');return}}
   }
   if(play.elapsed>=play.total){finishPlay();return}
   const idx=blockIndexAt(play.blocks,play.elapsed);
@@ -2518,14 +2519,56 @@ $('#btn-skip').addEventListener('click',()=>{
     h('div',{style:'display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-top:16px'},...skipBtns)],()=>closeModal(m));
 });
 $('#btn-exit').addEventListener('click',askExit);
+/* Laufende Aufzeichnung wird lokal gesichert (alle 10 s und beim Verlassen der Seite). Nach einem Abbruch (App beendet, Seite neu geladen)
+   kann das Training fortgesetzt oder als Einheit gespeichert werden. Gelöscht wird erst nach Speichern/Verwerfen. */
+const LIVEK='wattlink-live';
+function liveSave(){
+  if(!play.running||play.i<0||!play.p)return;
+  try{localStorage.setItem(LIVEK,JSON.stringify({p:play.p,blocks:play.blocks,total:play.total,elapsed:play.elapsed,std:play.std||null,gaveUp:!!play.gaveUp,pauseSec:play.pauseSec||0,endWhy:play.endWhy||null,
+    startedAt:play.startedAt,rec:play.rec,hrs:play.hrs,cat:play.cat,savedAt:Date.now()}))}catch(e){}
+}
+function liveClear(){try{localStorage.removeItem(LIVEK)}catch(e){}}
+function liveLoad(){try{const d=JSON.parse(localStorage.getItem(LIVEK));return d&&d.p&&Array.isArray(d.blocks)&&Array.isArray(d.rec)?d:null}catch(e){return null}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)liveSave()});
+window.addEventListener('pagehide',liveSave);
+function liveRestore(d,start){
+  const lastT=d.rec.length?d.rec[d.rec.length-1][0]:-1;
+  Object.assign(play,{p:d.p,blocks:d.blocks,total:d.total,i:-1,elapsed:d.elapsed,paused:true,running:!!start,finished:false,auto:false,zeroSince:0,devSp:null,devSince:0,spBusy:false,spAt:0,sentW:null,lastSendAt:0,
+    checked:new Set(),ovr:null,bypass:false,secDrawn:-1,beepRem:0,cat:d.cat,samples:{p:[],h:[]},hrs:d.hrs||[],last:performance.now(),std:d.std,gaveUp:d.gaveUp,pauseSec:d.pauseSec,endWhy:d.endWhy,
+    resumeHold:true,rec:d.rec,startedAt:d.startedAt,recOff:Math.round((Date.now()-d.startedAt)/1000)-(lastT+1)});
+  if(!start)return;
+  $('#btn-skip').innerHTML=I(play.std?'flag':'skip',26);$('#btn-skip').setAttribute('aria-label',play.std?'Aufgeben':'Überspringen');$('#pl-warn').style.display='none';
+  try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume()}catch(e){}
+  Device.active=true;acquireWake();setPauseIcon();$('#pl-ovr').classList.remove('show');
+  $('#pl-dbg').style.display=Device.mode==='sim'&&Device.state==='on'?'flex':'none';
+  clearInterval(play.timer);play.timer=setInterval(tick,250);
+  clearInterval(play.recT);play.recT=setInterval(recTick,1000);
+  Music.start();buildArcs();startRaf();
+  go('play',{resume:true});
+}
+function liveCheck(){
+  const d=liveLoad();if(!d||play.running)return;
+  let m;
+  const btn=(cls,txt,fn)=>h('button',{class:'btn '+cls,style:'width:100%;min-height:52px;font-size:15.5px',onclick:fn},txt);
+  m=openModal([h('h3',{},'Unterbrochenes Training'),
+    h('p',{},`${d.p.name} · ${fmtTime(Math.round(d.elapsed))} von ${fmtTime(Math.round(d.total))}`),
+    h('div',{style:'display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-top:16px'},
+      btn('primary','Fortsetzen',()=>{closeModal(m);if(play.running)return;liveRestore(d,true);toast('Pausiert – zum Weiterfahren Play drücken')}),
+      btn('','Als Einheit speichern',async()=>{closeModal(m);
+        liveRestore(d,false);const sm=buildRun('aborted');sm.end=d.savedAt;
+        if(sm.moving>0){await storeRun(sm)}else toast('Keine Daten aufgezeichnet');
+        liveClear()}),
+      btn('','Verwerfen',async()=>{if(await confirmDialog({title:'Training verwerfen?',text:'Die aufgezeichneten Daten gehen verloren.',ok:'Verwerfen',danger:true})){closeModal(m);liveClear()}}))],()=>{});
+}
 /* Aufzeichnung: 1 Zeile pro Sekunde [Uhrzeit-s, Programm-s, Watt, rpm, HF, Soll-W, pausiert] */
 const REC_COLS=['t','e','w','c','h','g','p'];
 function recTick(){
   if(!play.running||play.i<0)return;
   const on=Device.state==='on',b=play.blocks[play.i];
-  play.rec.push([Math.round((Date.now()-play.startedAt)/1000),Math.round(play.elapsed),
+  play.rec.push([Math.round((Date.now()-play.startedAt)/1000)-(play.recOff||0),Math.round(play.elapsed),
     on&&Device.power!=null?Math.round(Device.power):null,on&&Device.rpm!=null?Math.round(Device.rpm):null,on&&Device.hr?Math.round(Device.hr):null,
     play.paused||!b?null:snap5(planAt(b,play.elapsed)/100*S.settings.ftp),play.paused?1:0]);
+  if(play.rec.length%10===0)liveSave();
 }
 function buildRun(status){
   const rows=play.rec,act=rows.filter(r=>!r[6]);
@@ -2574,7 +2617,7 @@ function stopRun(){
   if(Cloud.pending)Cloud.apply(Cloud.pending);   // während des Trainings eingetroffene Cloud-Änderungen jetzt übernehmen
 }
 /* nach Ende zurück – aber nur, wenn man gerade auf der Play-Seite ist (bei minimiertem Training bleibt man, wo man ist) */
-function leavePlay(){play.bypass=true;if(cur()==='play')history.back()}
+function leavePlay(){liveClear();play.bypass=true;if(cur()==='play')history.back()}
 async function askExit(){
   if(!play.running)return;
   const ok=await confirmDialog({title:'Programm abbrechen?',text:'Das Training wird beendet.',ok:'Beenden',cancel:'Weiter fahren',danger:true});
@@ -3178,6 +3221,7 @@ const spRedirect=()=>location.origin+location.pathname;
 const spConnected=()=>!!(S.settings.spId&&spLoad().r);
 const b64u=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 async function spLogin(){
+  if(play.running){toast('Während eines Trainings nicht möglich');return}   // die Anmeldung verlässt die Seite und würde das laufende Training beenden
   const id=(S.settings.spId||'').trim();if(!id){toast('Erst die Client-ID eintragen');return}
   if(!(window.crypto&&crypto.subtle)){toast('Spotify braucht eine https-Adresse');return}
   const ver=b64u(crypto.getRandomValues(new Uint8Array(48))),st=b64u(crypto.getRandomValues(new Uint8Array(12)));
@@ -3756,7 +3800,7 @@ $('#btn-create').addEventListener('click',()=>go('create',{draft:newProgram(),is
 $('#conn').addEventListener('click',()=>{Device.state==='on'?(Device.disconnect(),toast('Getrennt')):Device.connect()});
 window.addEventListener('resize',()=>{const v=V[cur()];v&&v.redraw&&v.redraw()});
 history.replaceState({d:0},'');
-updConn();Cloud.listeners.add(updIdentity);render();spHandleRedirect();
+updConn();Cloud.listeners.add(updIdentity);render();spHandleRedirect();setTimeout(liveCheck,700);
 $('#home-sync').addEventListener('click',()=>toast(Cloud.text()));
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 (()=>{
